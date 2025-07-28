@@ -21,4 +21,12 @@ The resulting files will have the same prefix, but will have the suffix .rmdup.1
 
 (skipping the step to flip the reads from the Fishman lab protocol, moving straight to next step to demultiplex samples in each library)
 
+## Step 2: Sample Demultiplexing using Stacks
+Requires a .txt file with sample barcodes of each well on the plate to demultiplex samples.
+prepare a txt file listing sample IDs and corresponding barcodes. The barcode file is `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
+
+Important: The BestRAD protocol we used to construct library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
+
+Important: for stacks, the input fastq files need to follow the naming format of fastq files as received from the sequencing center.
+
 
