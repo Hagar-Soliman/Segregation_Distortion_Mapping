@@ -23,7 +23,7 @@ The resulting files will have the same prefix, but will have the suffix .rmdup.1
 
 ## Step 2: Sample Demultiplexing using Stacks
 Requires a .txt file with sample barcodes of each well on the plate to demultiplex samples.
-prepare a txt file listing sample IDs and corresponding barcodes. The barcode file is `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
+Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes can be found in `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
 
 Important: The BestRAD protocol we used to construct library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
 
