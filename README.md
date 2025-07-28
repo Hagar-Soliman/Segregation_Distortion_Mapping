@@ -6,7 +6,7 @@ Make sure to request **i5** and **i7** fastq files from the sequencing center.
 This step removes PCR duplicate using the i5 molecular barcode.
 
 python script: `step1_rmdup.py` (requires unzipped fastq files), runs in about 2 hours per library.
-### Required inputs:
+**Required inputs**:
 R1, R2, i5 and i7 fastq files
 Rename files from sequencing center to match format of R1, R2, i5 and i7 fastq files:
 files from YCGA will be supplied as:
@@ -27,6 +27,10 @@ Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes c
 
 Important: The BestRAD protocol we used to construct library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
 
-Important: for stacks, the input fastq files need to follow the naming format of fastq files as received from the sequencing center.
+**⚠️Important** before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files
+rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_P4_L1_2024_S3_L006_R1_001.fastq.gz (or with underscore before R#)
+
+stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meeaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
+The barcodes file needs to be a tab delimited .txt file.
 
 
