@@ -8,8 +8,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mem=10G
 #SBATCH --mail-user=hagar.soliman@yale.edu
-#SBATCH -o demup_A1_A1.out
-#SBATCH -e demup_A1_A1.err
+#SBATCH -o demup_1A_1A.out
+#SBATCH -e demup_1A_1A.err
 
 ###IMPORTANT:###
 #before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files. 
@@ -20,7 +20,7 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=A1_A1  #modify sample library name
+library=1A_1A  #modify sample library name
  
 INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
