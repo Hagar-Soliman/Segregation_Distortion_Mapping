@@ -15,7 +15,7 @@ R1 = Sequencing Read 1
 R2 = I5 index read
 R3 = Sequencing Read 2
 
-**To prefrom this step:** run `step1_rmdup.sh` script
+**To prefrom this step:** run `step1_rmdup.sh` script. This bash script will call the python script `step1_rmdup.py`.
 This step will remove duplicates and output fastq.gz files for i5, i7, R1 and R2
 The resulting files will have the same prefix, but will have the suffix .rmdup.1.fastq (forward reads) and .rmdup.2.fastq (reverse reads).
 
