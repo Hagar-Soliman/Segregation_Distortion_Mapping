@@ -6,7 +6,8 @@ Make sure to request **i5** and **i7** fastq files from the sequencing center.
 This step removes PCR duplicate using the i5 molecular barcode.
 
 python script: `step1_rmdup.py` (requires unzipped fastq files), runs in about 2 hours per library.
-**Required inputs**:
+
+**Required inputs:**
 R1, R2, i5 and i7 fastq files
 Rename files from sequencing center to match format of R1, R2, i5 and i7 fastq files:
 files from YCGA will be supplied as:
