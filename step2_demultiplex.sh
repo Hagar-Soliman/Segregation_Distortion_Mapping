@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=p7l2_demultiplex
+#SBATCH --job-name=A1_A1_demultiplex
 #SBATCH -c 8
 #SBATCH -n 1
 #SBATCH -N 1
@@ -7,9 +7,9 @@
 #SBATCH --time=4:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mem=10G
-#SBATCH --mail-user=piafranziska.schwarz@yale.edu
-#SBATCH -o demu_p7l2.out
-#SBATCH -e demu_p7l2.err
+#SBATCH --mail-user=hagar.soliman@yale.edu
+#SBATCH -o demup_A1_A1.out
+#SBATCH -e demup_A1_A1.err
 
 ###IMPORTANT:###
 #before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files. 
@@ -25,7 +25,7 @@ library=Sample_PS_P7_L2_2024  #modify sample library name
 MASTER_DIR=/home/ps2267/ycga_work/hybrid_necrosis/raw_data/${library}/
 INPUT_DIR=/home/ps2267/ycga_work/hybrid_necrosis/raw_data/${library}/rmdup
 OUT_DIR=/home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/${library}_demultiplexed
-#barcodes=/home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/ #add file name to path at -b flag
+#barcodes=/home/hks25/ycga_work/hybrid_necrosis/demultiplexed/ #add file name to path at -b flag
 
 #mkdir -p /home/ps2267/ycga_work/hybrid_necrosis/demultiplexed
 mkdir /home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/${library}_demultiplexed
