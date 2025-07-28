@@ -20,25 +20,21 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=Sample_PS_P7_L2_2024  #modify sample library name
+library=A1_A1  #modify sample library name
  
-MASTER_DIR=/home/ps2267/ycga_work/hybrid_necrosis/raw_data/${library}/
-INPUT_DIR=/home/ps2267/ycga_work/hybrid_necrosis/raw_data/${library}/rmdup
-OUT_DIR=/home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/${library}_demultiplexed
+INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
+OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 #barcodes=/home/hks25/ycga_work/hybrid_necrosis/demultiplexed/ #add file name to path at -b flag
 
-#mkdir -p /home/ps2267/ycga_work/hybrid_necrosis/demultiplexed
-mkdir /home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/${library}_demultiplexed
+mkdir -p /home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
 # List files in the input directory
 echo "Listing files in ${INPUT_DIR}:"
 ls -l ${INPUT_DIR}
 
-#cd ${MASTER_DIR}/
-
 process_radtags -P -p ${INPUT_DIR} \
                 -o ${OUT_DIR} \
-                -b /home/ps2267/ycga_work/hybrid_necrosis/demultiplexed/P7_L2_sample_barcodes.txt \
+                -b /home/hks25/palmer_scratch/libs/${library}/rmdup/${library}_barcodes.txt \
                 --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad \
                 --rescue
 
