@@ -84,6 +84,6 @@ Run: `step5_sort_clean`
 
 Software: `SAMtools` 
 
-input: `.sam files`
+Input: `.sam files`
 
-output `.bam files`
+Output `.bam files`
