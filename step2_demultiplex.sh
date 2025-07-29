@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=A1_A1_demultiplex
+#SBATCH --job-name=1A_1A_demultiplex
 #SBATCH -c 8
 #SBATCH -n 1
 #SBATCH -N 1
@@ -20,7 +20,7 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=1A_1A  #modify sample library name
+library=1A_1A  #modify sample library name and make sure the paths are correct.
  
 INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
