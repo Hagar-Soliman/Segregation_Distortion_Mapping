@@ -34,7 +34,7 @@ ls -l ${INPUT_DIR}
 
 process_radtags -P -p ${INPUT_DIR} \
                 -o ${OUT_DIR} \
-                -b /home/hks25/palmer_scratch/libs/${library}/rmdup/${library}_barcodes.txt \
+                -b /home/hks25/palmer_scratch/libs/rawData/${library}/${library}_barcodes.txt \
                 --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad \
                 --rescue
 
