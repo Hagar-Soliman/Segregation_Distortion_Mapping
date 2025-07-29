@@ -16,15 +16,16 @@
 module load miniconda
 conda activate py3_env
 
+library=1A_1A  #modify sample library name and make sure that paths are correct.
 
-INPUT_DIR=/home/hks25/palmer_scratch/libs/1A_1A/Unaligned
-OUTPUT_DIR=/home/hks25/palmer_scratch/libs/1A_1A/rmdup
+INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/Unaligned
+OUTPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
 SCRIPT_DIR=/home/hks25/palmer_scratch
 
 cd $INPUT_DIR
 
 #unzip gzipped fastq files for python3 script
-gzip -d 1A_1A*
+gzip -d ${library}*
 
 #rename files from sequencing center to match format of R1, R2, i5 and i7 fastq files: 
 #files from YCGA will be supplied as: 
@@ -35,19 +36,19 @@ gzip -d 1A_1A*
 
 # rename library files to match format of R1, R2, i5 and i7 fastq files 
 
-mv 1A_1A_S1_L003_I1_001.fastq 1A_1A_i7.fastq
-mv 1A_1A_A22VH7TLT4_L003_R1_001.fastq 1A_1A_R1.fastq
-mv 1A_1A_A22VH7TLT4_L003_R2_001.fastq 1A_1A_i5.fastq
-mv 1A_1A_A22VH7TLT4_L003_R3_001.fastq 1A_1A_R2.fastq
+mv 1A_1A_S1_L003_I1_001.fastq 1A1A_S1_L003_i7_001.fastq
+mv 1A_1A_A22VH7TLT4_L003_R1_001.fastq 1A1A_RA22VH7TLT4_L003_R1_001.fastq
+mv 1A_1A_A22VH7TLT4_L003_R2_001.fastq 1A1A_A22VH7TLT4_L003_i5_001.fastq
+mv 1A_1A_A22VH7TLT4_L003_R3_001.fastq 1A1A_A22VH7TLT4_L003_R2_001.fastq
 
 
 mkdir -p $OUTPUT_DIR
 
 cd $INPUT_DIR
 
-# run python3 script to remove duplicates, customize -p and -s arguments for each library 
+#run python3 script to remove duplicates, customize -p and -s arguments for each library 
 python3 $SCRIPT_DIR/step1_rmdup.py \
-  -p 1A_1A \
+  -p ${library} \
   -s fastq
 
 #gzip fastq files 
