@@ -22,7 +22,7 @@ module load Stacks/2.59-GCCcore-10.2.0
 
 library=1A_1A  #modify sample library name and make sure the paths are correct.
  
-INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
+INPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 #barcodes=/home/hks25/ycga_work/hybrid_necrosis/demultiplexed/ #add file name to path at -b flag
 
