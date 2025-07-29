@@ -51,4 +51,11 @@ Details for the adapter sequences file (generate with text editor):
 - Adaptor 3 & 4: forward and reverse adapter sequences from NEBNext adapters kit as listed in [NEBNext Primer instruction manual](https://www.neb.com/en-us/-/media/nebus/files/manuals/manuale7335_e7500_-e7710_e7730.pdf?rev=2e735fd18b544d46b36ee0e88353ef5c&sc_lang=en-us&hash=CC77B45817715F3ED3A8F3B1953450EB)
 - Forward and reverse i5 adapter sequences.
 - Forward and reverse i7 adapter sequences (modified based on i7 adapter sequence, nucleotide number, might vary between 6-8).
+
 Note that the NNNNNN in the sequnces is the uniqe identifier for each sample/individual.
+## Step 4: Sequence alignment/Mapping
+Run: `step4_align.sh`
+
+software: `BWA`
+
+Input: `fastq.gz` files, the output from trimmomatic, and reference genome (indexed with samtools faidx) --> run indexing script as needed
