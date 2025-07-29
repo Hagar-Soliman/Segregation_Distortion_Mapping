@@ -16,10 +16,10 @@
 module load miniconda
 conda activate py3_env
 
-library=1A_1A  #modify sample library name and make sure that paths are correct.
+library=1A_1A  #modify sample library name and make sure paths are correct.
 
-INPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/Unaligned
-OUTPUT_DIR=/home/hks25/palmer_scratch/libs/${library}/rmdup
+INPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/Unaligned
+OUTPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/rmdup
 SCRIPT_DIR=/home/hks25/palmer_scratch
 
 cd $INPUT_DIR
