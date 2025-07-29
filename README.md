@@ -2,6 +2,7 @@
 follow: dx.doi.org/10.17504/protocols.io.bjnbkman for processing ddRAD data from raw fastqs to vcf (2021).
 Make sure to request **i5** and **i7** fastq files from the sequencing center.
 ## Step 1: remove PCR duplicated from each library
+Run: `step1_rmdup.sh`
 
 This step removes PCR duplicate using the i5 molecular barcode.
 
@@ -23,6 +24,8 @@ The resulting files will have the same prefix, but will have the suffix .rmdup.1
 (skipping the step to flip the reads from the Fishman lab protocol, moving straight to next step to demultiplex samples in each library)
 
 ## Step 2: Sample Demultiplexing using Stacks
+Run:  `step2_demultiplex.sh`
+
 Requires a .txt file with sample barcodes of each well on the plate to demultiplex samples.
 Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes can be found in `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
 
@@ -35,6 +38,8 @@ stacks is picky about the length of the file names for each sample. picky how ma
 The barcodes file needs to be a tab delimited .txt file.
 
 ## Step 3: Adaptor Trimmning
+Run: `step3_trim.sh`
+
 software: trimmomatic
 
 input:
@@ -42,7 +47,8 @@ input:
 `step3_adapter.fa` file contains adapter sequences to be trimmed
 
 Details for the adapter sequences file (generate with text editor):
-- Adapter 1 & 2: forward and reverse adapter sequences from the BestRAD oligos (including the GG before the formal barcodes)
+- Adapter 1 & 2: forward and reverse adapter sequences from the BestRAD oligos (including the GG before the formal barcodes).
 - Adaptor 3 & 4: forward and reverse adapter sequences from NEBNext adapters kit as listed in [NEBNext Primer instruction manual](https://www.neb.com/en-us/-/media/nebus/files/manuals/manuale7335_e7500_-e7710_e7730.pdf?rev=2e735fd18b544d46b36ee0e88353ef5c&sc_lang=en-us&hash=CC77B45817715F3ED3A8F3B1953450EB)
-- Forward and reverse i5 adapter sequences,
+- Forward and reverse i5 adapter sequences.
 - Forward and reverse i7 adapter sequences (modified based on i7 adapter sequence, nucleotide number, might vary between 6-8).
+Note that the NNNNNN in the sequnces is the uniqe identifier for each sample/individual.
