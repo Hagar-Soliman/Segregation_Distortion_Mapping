@@ -87,3 +87,8 @@ Software: `SAMtools`
 Input: `.sam files`
 
 Output `.bam files`
+
+To check for the rate of mapping, you can run this for each bam
+```bash
+samtools flagstat 1A_1A_B6_sorted_clean.bam
+```
