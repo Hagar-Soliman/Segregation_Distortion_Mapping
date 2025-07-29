@@ -58,4 +58,32 @@ Run: `step4_align.sh`
 
 software: `BWA`
 
-Input: `fastq.gz` files, the output from trimmomatic, and reference genome (indexed with samtools faidx) --> run indexing script as needed
+Input: `fastq.gz` files, the output from trimmomatic, and reference genome (indexed with samtools faidx).
+
+Our lab already has the index for the reference genome in the same direcotry, so don't worry about making an index, but here is the script just in case:
+```bash
+#load BWA module 
+module load BWA/0.7.17-GCCcore-12.2.0
+
+# Path to reference genome
+reference="/gpfs/gibbs/project/coughlan/hc858/test/Mguttatusvar_IM62_797_v3.0.fa"
+
+# Create a directory for storing index files.
+index_dir="ref_index_files"
+mkdir -p $index_dir
+
+# Change to the directory where the reference genome file is located.
+cd $(dirname $reference)
+
+# Run the BWA index command to generate the index and move the output to a new directory.
+bwa index $(basename $reference)
+mv *.bwt *.pac *.ann *.amb *.sa $index_dir
+```
+### Step 5: Clean and Sort
+Run: `step5_sort_clean`
+
+Software: `SAMtools` 
+
+input: `.sam files`
+
+output `.bam files`
