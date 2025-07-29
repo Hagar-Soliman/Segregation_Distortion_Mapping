@@ -34,4 +34,15 @@ rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_
 stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meeaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
 The barcodes file needs to be a tab delimited .txt file.
 
+## Step 3: Adaptor Trimmning
+software: trimmomatic
 
+input:
+4 fastq files per sample generated from stacks
+`step3_adapter.fa` file contains adapter sequences to be trimmed
+
+Details for the adapter sequences file (generate with text editor):
+- Adapter 1 & 2: forward and reverse adapter sequences from the BestRAD oligos (including the GG before the formal barcodes)
+- Adaptor 3 & 4: forward and reverse adapter sequences from NEBNext adapters kit as listed in [NEBNext Primer instruction manual](https://www.neb.com/en-us/-/media/nebus/files/manuals/manuale7335_e7500_-e7710_e7730.pdf?rev=2e735fd18b544d46b36ee0e88353ef5c&sc_lang=en-us&hash=CC77B45817715F3ED3A8F3B1953450EB)
+- Forward and reverse i5 adapter sequences,
+- Forward and reverse i7 adapter sequences (modified based on i7 adapter sequence, nucleotide number, might vary between 6-8).
