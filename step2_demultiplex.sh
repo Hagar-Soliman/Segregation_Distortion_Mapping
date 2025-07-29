@@ -8,8 +8,8 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mem=10G
 #SBATCH --mail-user=hagar.soliman@yale.edu
-#SBATCH -o demup_1A_1A.out
-#SBATCH -e demup_1A_1A.err
+#SBATCH -o %x_%j.out
+#SBATCH -e %x_%j.err
 
 ###IMPORTANT:###
 #before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files. 
