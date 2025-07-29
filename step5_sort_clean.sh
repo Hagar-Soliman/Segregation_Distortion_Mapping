@@ -39,7 +39,8 @@ do
 
     #Use Samtools for filtering: Remove unmapped reads and reads with an alignment quality below 30
     #apply -q 30 for downstream analysis of variant calling, could use -q 20 for exploratory analysis 
-    samtools view -@ 16 -b -F 4 -q 30 $output_bam > $output_clean_bam
+    #Pei-wei mentioned that 30 is too low and it removed a lot of reads.
+    samtools view -@ 16 -b -F 4 -q 10 $output_bam > $output_clean_bam
 
     #Delete the unfiltered BAM to conserve disk space
     rm $output_bam
