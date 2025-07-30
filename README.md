@@ -29,7 +29,7 @@ Run:  `step2_demultiplex.sh`
 Requires a .txt file with sample barcodes of each well on the plate to demultiplex samples.
 Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes can be found in `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
 
-Important: The BestRAD protocol we used to construct library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
+Important: The BestRAD protocol we used to construct the library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
 
 **⚠️Important** before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files
 rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_P4_L1_2024_S3_L006_R1_001.fastq.gz (or with underscore before R#)
@@ -92,3 +92,4 @@ To check for the rate of mapping, you can run this for each bam
 ```bash
 samtools flagstat 1A_1A_B6_sorted_clean.bam
 ```
+Also, you can check the read number for each sequence using `SAMtools flagstats`. Use the loop in the `calc_read_number_loop.sh`
