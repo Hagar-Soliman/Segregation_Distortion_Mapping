@@ -79,7 +79,7 @@ cd $(dirname $reference)
 bwa index $(basename $reference)
 mv *.bwt *.pac *.ann *.amb *.sa $index_dir
 ```
-### Step 5: Clean and Sort
+## Step 5: Clean and Sort
 Run: `step5_sort_clean`
 
 Software: `SAMtools` 
