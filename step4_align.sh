@@ -14,13 +14,14 @@
 
 
 module load BWA/0.7.17-GCCcore-12.2.0
+module load SAMtools/1.20-GCC-12.2.0
 
 library=1A_1A #Change library name and make sure paths are correct
 
 echo "library: $library"
 
 input_dir=/home/hks25/palmer_scratch/libs/trimmed/${library}_trimmed
-output_dir=/home/hks25/palmer_scratch/libs/aligned_BWA/${library}_aligned
+output_dir=/home/hks25/palmer_scratch/libs/aligned/${library}_aligned
 
 mkdir -p $output_dir
 
@@ -35,10 +36,10 @@ do
     # checks if the paired file file_2 exists. The -f option tests if the file is a regular file.
     if [[ -f $file_2 ]]; then
         # following line defines the output SAM file path
-        output_sam="${output_dir}/${base_name}.sam"
+        output_bam="${output_dir}/${base_name}.bam"
 
         # following line runs BWA alignement using 16 threads and outputs SAM files to output directory
-        bwa mem -t 16 $REF_PATH $file_1 $file_2 > $output_sam
+        bwa mem -t 16 $REF_PATH $file_1 $file_2 | samtools sort -@ 16 | samtools view -@ 16 -b -F 4 -q 20 > $output_bam
     else
         echo "Pairing-file ${file_2} does not exist, skip ${file_1}"
     fi
