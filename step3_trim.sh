@@ -16,7 +16,7 @@
 
 module load Trimmomatic/0.39-Java-11
 
-library=1A_1A
+library=1A_1A #change the lib name and make sure the paths are correct.
 echo "library: $library"
 
 input_dir=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed #directory that contains files from demultiplexing with stacks 
