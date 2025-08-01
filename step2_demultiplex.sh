@@ -26,10 +26,10 @@ OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
 #rename the files so Stacks doesn't get mad
 cd $INPUT_DIR
-mv ${library}.rmdup_i7.fastq 1A1B_S1_L003_i7_001.fastq
-mv ${library}.rmdup_R1.fastq 1A1B_A22VH7TLT4_L003_R1_001.fastq
-mv ${library}.rmdup_i5.fastq 1A1B_A22VH7TLT4_L003_i5_001.fastq
-mv ${library}.rmdup_R2.fastq 1A1B_A22VH7TLT4_L003_R2_001.fastq
+mv ${library}.rmdup_i7.fastq.gz 1A1B_S1_L003_i7_001.fastq.gz
+mv ${library}.rmdup_R1.fastq.gz 1A1B_A22VH7TLT4_L003_R1_001.fastq.gz
+mv ${library}.rmdup_i5.fastq.gz 1A1B_A22VH7TLT4_L003_i5_001.fastq.gz
+mv ${library}.rmdup_R2.fastq.gz 1A1B_A22VH7TLT4_L003_R2_001.fastq.gz
 
 mkdir -p /home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
@@ -41,6 +41,6 @@ process_radtags -P -p ${INPUT_DIR} \
                 -o ${OUT_DIR} \
                 -b /home/hks25/palmer_scratch/libs/barcodes/${library}_barcodes.txt \
                 --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad \
-                --rescue --barcode_dist_2
+                --rescue
 
 
