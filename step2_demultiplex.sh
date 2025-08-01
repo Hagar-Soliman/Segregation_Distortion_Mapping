@@ -20,11 +20,16 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=1A_1A  #modify sample library name and make sure the paths are correct.
- 
+library=1A_1A  #modify sample library name and make sure the paths are correct. 
 INPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
-#barcodes=/home/hks25/ycga_work/hybrid_necrosis/demultiplexed/ #add file name to path at -b flag
+
+#rename the files so Stacks doesn't get mad
+cd $INPUT_DIR
+mv ${library}_i7_.fastq 1A1B_S1_L003_i7_001.fastq
+mv ${library}_R1.fastq 1A1B_A22VH7TLT4_L003_R1_001.fastq
+mv ${library}_i5.fastq 1A1B_A22VH7TLT4_L003_i5_001.fastq
+mv ${library}_R2.fastq 1A1B_A22VH7TLT4_L003_R2_001.fastq
 
 mkdir -p /home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
