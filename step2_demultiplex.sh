@@ -20,7 +20,7 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=1A_1A  #modify sample library name and make sure the paths are correct. 
+library=1A_1B  #modify sample library name and make sure the paths are correct. 
 INPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
@@ -41,6 +41,6 @@ process_radtags -P -p ${INPUT_DIR} \
                 -o ${OUT_DIR} \
                 -b /home/hks25/palmer_scratch/libs/barcodes/${library}_barcodes.txt \
                 --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad \
-                --rescue
+                --rescue --barcode_dist_2
 
 
