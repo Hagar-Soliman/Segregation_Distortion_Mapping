@@ -26,10 +26,10 @@ OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
 #rename the files so Stacks doesn't get mad
 cd $INPUT_DIR
-mv ${library}_i7_.fastq 1A1B_S1_L003_i7_001.fastq
-mv ${library}_R1.fastq 1A1B_A22VH7TLT4_L003_R1_001.fastq
-mv ${library}_i5.fastq 1A1B_A22VH7TLT4_L003_i5_001.fastq
-mv ${library}_R2.fastq 1A1B_A22VH7TLT4_L003_R2_001.fastq
+mv ${library}.rmdup_i7.fastq 1A1B_S1_L003_i7_001.fastq
+mv ${library}.rmdup_R1.fastq 1A1B_A22VH7TLT4_L003_R1_001.fastq
+mv ${library}.rmdup_i5.fastq 1A1B_A22VH7TLT4_L003_i5_001.fastq
+mv ${library}.rmdup_R2.fastq 1A1B_A22VH7TLT4_L003_R2_001.fastq
 
 mkdir -p /home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
