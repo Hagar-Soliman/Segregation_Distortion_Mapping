@@ -36,10 +36,10 @@ gzip -d ${library}*
 
 # rename library files to match format of R1, R2, i5 and i7 fastq files 
 
-mv 1A_1A_S1_L003_I1_001.fastq 1A1A_S1_L003_i7_001.fastq
-mv 1A_1A_A22VH7TLT4_L003_R1_001.fastq 1A1A_RA22VH7TLT4_L003_R1_001.fastq
-mv 1A_1A_A22VH7TLT4_L003_R2_001.fastq 1A1A_A22VH7TLT4_L003_i5_001.fastq
-mv 1A_1A_A22VH7TLT4_L003_R3_001.fastq 1A1A_A22VH7TLT4_L003_R2_001.fastq
+mv ${library}_S1_L003_I1_001.fastq ${library}_i7.fastq
+mv ${library}_A22VH7TLT4_L003_R1_001.fastq ${library}_R1.fastq
+mv ${library}_A22VH7TLT4_L003_R2_001.fastq ${library}_i5.fastq
+mv ${library}_A22VH7TLT4_L003_R3_001.fastq ${library}_R2.fastq
 
 
 mkdir -p $OUTPUT_DIR
