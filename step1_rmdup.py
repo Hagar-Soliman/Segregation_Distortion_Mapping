@@ -27,15 +27,18 @@ print(f"Opening files with prefix: {prefix}")
 print(f"Suffix used: {suffix}")
 
 # Open files using 'with' to ensure they close properly
-with open("/home/hks25/palmer_scratch/libs/1A_1A/Unaligned/" + prefix + "_R1." + suffix, 'r') as fwdin, \
-     open("/home/hks25/palmer_scratch/libs/1A_1A/Unaligned/" + prefix + "_R2." + suffix, 'r') as revin, \
-     open("/home/hks25/palmer_scratch/libs/1A_1A/Unaligned/" + prefix + "_i5." + suffix, 'r') as i5in, \
-     open("/home/hks25/palmer_scratch/libs/1A_1A/Unaligned/" + prefix + "_i7." + suffix, 'r') as i7in, \
-     open(prefix + '.rmdup_R1.' + suffix, 'w') as fwdout, \
-     open(prefix + '.rmdup_R2.' + suffix, 'w') as revout, \
-     open(prefix + '.rmdup_i5.' + suffix, 'w') as i5out, \
-     open(prefix + '.rmdup_i7.' + suffix, 'w') as i7out, \
-     open(prefix + ".rmdup.log", 'w') as logout:
+library = '1A_1B'  # Change this for each run
+base_path = f"/home/hks25/palmer_scratch/libs/rawData/{library}/Unaligned/"
+
+with open(f"{base_path}{prefix}_R1.{suffix}", 'r') as fwdin, \
+     open(f"{base_path}{prefix}_R2.{suffix}", 'r') as revin, \
+     open(f"{base_path}{prefix}_i5.{suffix}", 'r') as i5in, \
+     open(f"{base_path}{prefix}_i7.{suffix}", 'r') as i7in, \
+     open(f"{prefix}.rmdup_R1.{suffix}", 'w') as fwdout, \
+     open(f"{prefix}.rmdup_R2.{suffix}", 'w') as revout, \
+     open(f"{prefix}.rmdup_i5.{suffix}", 'w') as i5out, \
+     open(f"{prefix}.rmdup_i7.{suffix}", 'w') as i7out, \
+     open(f"{prefix}.rmdup.log", 'w') as logout:
 
     sys.stderr.write("\n")
 
