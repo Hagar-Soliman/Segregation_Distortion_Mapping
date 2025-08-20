@@ -17,6 +17,8 @@ files from YCGA will be supplied as:
 - R2 = I5 index read
 - R3 = Sequencing Read 2
 
+**⚠️Note:** this Python script will not recognize your fasta files unless their name is ${library}_R1.fastaq. The prefix must be the library name, and the suffix must be R1, R2, i7, or i5. Otherwise, it won't input it.
+
 **To prefrom this step:** run `step1_rmdup.sh` script. This bash script will call the python script `step1_rmdup.py`.
 This step will remove duplicates and output fastq.gz files for i5, i7, R1 and R2
 The resulting files will have the same prefix, but will have the suffix .rmdup.1.fastq (forward reads) and .rmdup.2.fastq (reverse reads).
