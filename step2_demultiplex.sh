@@ -20,27 +20,29 @@
 
 module load Stacks/2.59-GCCcore-10.2.0
 
-library=1A_1B  #modify sample library name and make sure the paths are correct. 
+#modify sample library name and make sure the paths are correct. 
+
+library=1A_1A
+stacks_name=1A1A
 INPUT_DIR=/home/hks25/palmer_scratch/libs/rawData/${library}/rmdup
 OUT_DIR=/home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
 
 #rename the files so Stacks doesn't get mad
-cd $INPUT_DIR
-mv ${library}.rmdup_i7.fastq.gz 1A1B_S1_L003_i7_001.fastq.gz
-mv ${library}.rmdup_R1.fastq.gz 1A1B_A22VH7TLT4_L003_R1_001.fastq.gz
-mv ${library}.rmdup_i5.fastq.gz 1A1B_A22VH7TLT4_L003_i5_001.fastq.gz
-mv ${library}.rmdup_R2.fastq.gz 1A1B_A22VH7TLT4_L003_R2_001.fastq.gz
 
-mkdir -p /home/hks25/palmer_scratch/libs/demultiplexed/${library}_demultiplexed
+cd $INPUT_DIR
+mv ${library}.rmdup_i7.fastq.gz ${stacks_name}_S1_L003_i7_001.fastq.gz
+mv ${library}.rmdup_R1.fastq.gz ${stacks_name}_A22VH7TLT4_L003_R1_001.fastq.gz
+mv ${library}.rmdup_i5.fastq.gz ${stacks_name}_A22VH7TLT4_L003_i5_001.fastq.gz
+mv ${library}.rmdup_R2.fastq.gz ${stacks_name}_A22VH7TLT4_L003_R2_001.fastq.gz
+
+mkdir -p $OUT_DIR
 
 # List files in the input directory
+
 echo "Listing files in ${INPUT_DIR}:"
 ls -l ${INPUT_DIR}
 
 process_radtags -P -p ${INPUT_DIR} \
                 -o ${OUT_DIR} \
                 -b /home/hks25/palmer_scratch/barcodes/${library}_barcodes.txt \
-                --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad \
-                --rescue
-
-
+                --renz-1 PstI --renz-2 BfaI -r -c -q --inline_null --bestrad --rescue \
