@@ -168,7 +168,7 @@ Run: `step5_VCF.sh` and `bam_list_loop.sh` to make the bam list.
 
 Software: `BCFtools` and `SAMtools`
 
-Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you.
+Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you. Also, make sure to add the parents and F1. Each VCF should be a linkage group (do not mix individuals from different cross directions unless there is a reason to do so)
 
 **⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
