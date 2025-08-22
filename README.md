@@ -31,9 +31,9 @@ Run:  `step2_demultiplex.sh`
 Requires a .txt file with sample barcodes of each well on the plate to demultiplex samples.
 Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes can be found in `A1_A1_barcodes`, note that the sample IDs will be different for rach library.
 
-Important: The BestRAD protocol we used to construct the library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
-
-**⚠️Important** before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files
+**⚠️Important Note:** The BestRAD protocol we used to construct the library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
+ 
+**⚠️Important Note:** before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files
 rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_P4_L1_2024_S3_L006_R1_001.fastq.gz (or with underscore before R#)
 
 stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meeaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
@@ -170,5 +170,5 @@ Software: `BCFtools` and `SAMtools`
 
 Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you.
 
-**Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
+**⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
