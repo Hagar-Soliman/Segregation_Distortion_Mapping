@@ -16,14 +16,16 @@
 module load BWA/0.7.17-GCCcore-12.2.0
 module load SAMtools/1.20-GCC-12.2.0
 
-library=1A_1A #Change library name and make sure paths are correct
+#Change library name and make sure paths are correct!!!!!!!!!!!!!!!!!!11
+
+library=1A_1A
 
 echo "library: $library"
 
 input_dir=/home/hks25/palmer_scratch/libs/trimmed/${library}_trimmed
 output_dir=/home/hks25/palmer_scratch/libs/aligned/${library}_aligned
 
-mkdir -p $output_dir
+mkdir -p "$output_dir"
 
 REF_PATH=/gpfs/gibbs/project/coughlan/shared/genomes/ref/Mimulus_guttatus_var_IM62_v3.mainGenome.fasta
 
@@ -39,7 +41,10 @@ do
         output_bam="${output_dir}/${base_name}.bam"
 
         # following line runs BWA alignement using 16 threads and outputs SAM files to output directory
-        bwa mem -t 16 $REF_PATH $file_1 $file_2 | samtools sort -@ 16 | samtools view -@ 16 -b -F 4 -q 20 > $output_bam
+       bwa mem -t 16 $REF_PATH $file_1 $file_2 | samtools view -@ 16 -b -F 4 -q 20 | samtools sort -@ 16 -o "$output_bam"
+       
+        # Index the BAM file after it's created
+        samtools index "$output_bam"
     else
         echo "Pairing-file ${file_2} does not exist, skip ${file_1}"
     fi
