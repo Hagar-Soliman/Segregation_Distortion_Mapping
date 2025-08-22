@@ -151,7 +151,7 @@ Details for the adapter sequences file (generate with text editor):
 - Forward and reverse i7 adapter sequences (modified based on i7 adapter sequence, nucleotide number, might vary between 6-8).
 
 Note that the NNNNNN in the sequnces is the uniqe identifier for each sample/individual.
-## Step 4: Sequence alignment, Sorting, and Cleaning
+## Step 4: Sequence alignment, Sorting, Cleaning, and Indexing
 Run: `step4_align.sh` 
 
 Software: `BWA` and `SAMtools`
@@ -162,27 +162,5 @@ Output: `.bam files`
 
 Sorted files are smaller in size and faster to process; this is why the downstream tools require sorted files. The cleaning step removes aligned sequences with low scores.
 
-Our lab already has the index for the reference genome in the same direcotry, so don't worry about making an index, but here is the script just in case:
-```bash
-#load BWA module 
-module load BWA/0.7.17-GCCcore-12.2.0
+Our lab already has the index for the reference genome in the same direcotry, so don't worry about making an index.
 
-# Path to reference genome
-reference="/gpfs/gibbs/project/coughlan/hc858/test/Mguttatusvar_IM62_797_v3.0.fa"
-
-# Create a directory for storing index files.
-index_dir="ref_index_files"
-mkdir -p $index_dir
-
-# Change to the directory where the reference genome file is located.
-cd $(dirname $reference)
-
-# Run the BWA index command to generate the index and move the output to a new directory.
-bwa index $(basename $reference)
-mv *.bwt *.pac *.ann *.amb *.sa $index_dir
-```
-To check for the rate of mapping, you can run this for each bam
-```bash
-samtools flagstat 1A_1A_B6_sorted_clean.bam
-```
-Use the loop in the `calc_read_number_loop.sh` to see the read number in all generated .bam files
