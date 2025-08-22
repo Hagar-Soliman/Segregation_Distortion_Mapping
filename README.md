@@ -142,15 +142,15 @@ software: trimmomatic
 
 input:
 4 fastq files per sample generated from stacks
-`step3_adapter.fa` file contains adapter sequences to be trimmed
+`step3_adapter.fa` file contain adapter sequences to be trimmed
 
-Details for the adapter sequences file (generate with text editor):
+Details for the adapter sequences file (generated with a text editor):
 - Adapter 1 & 2: forward and reverse adapter sequences from the BestRAD oligos (including the GG before the formal barcodes).
 - Adaptor 3 & 4: forward and reverse adapter sequences from NEBNext adapters kit as listed in [NEBNext Primer instruction manual](https://www.neb.com/en-us/-/media/nebus/files/manuals/manuale7335_e7500_-e7710_e7730.pdf?rev=2e735fd18b544d46b36ee0e88353ef5c&sc_lang=en-us&hash=CC77B45817715F3ED3A8F3B1953450EB)
 - Forward and reverse i5 adapter sequences.
 - Forward and reverse i7 adapter sequences (modified based on i7 adapter sequence, nucleotide number, might vary between 6-8).
 
-Note that the NNNNNN in the sequnces is the uniqe identifier for each sample/individual.
+Note that the NNNNNN in the sequences is the unique identifier for each sample/individual.
 ## Step 4: Sequence alignment, Sorting, Cleaning, and Indexing
 Run: `step4_align.sh` 
 
@@ -162,5 +162,13 @@ Output: `.bam files`
 
 Sorted files are smaller in size and faster to process; this is why the downstream tools require sorted files. The cleaning step removes aligned sequences with low scores.
 
-Our lab already has the index for the reference genome in the same direcotry, so don't worry about making an index.
+Our lab already has the index for the reference genome in the same directory, so don't worry about making an index.
+## Step 5: SNP Calling
+Run: `step5_VCF.sh` and `bam_list_loop.sh` to make the bam list.
+
+Software: `BCFtools` and `SAMtools`
+
+Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you.
+
+**Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
