@@ -172,3 +172,150 @@ Input: a .txt list of full paths to all the bam files needed for this VCF. I hav
 
 **⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
+## Step 6: VCF processing using 3 Python scripts
+Note that the third python script outputs lots of data (i.e. .bam.txt file for each bam file in the original aligned directory) AND does not overwrite the generated files if failed and re-ran. Instead, it will just keep adding lines to the preexisity files. Thus, always make sure to remove any generated files if your script failed to run before re-running again. 
+## Step 7: Assign parental ancestry (R)
+## step 8: Windows
+## Step 9: Second Ancestry loop to filter and output .g files (R)
+```r
+#making sense of windows data:
+#when het dev = 0.4 and windows= 100KB--> THIS IS WHAT I ENDED UP USING, BUT YOU MIGHT WANT TO PLAY WITH WINDOW SIZES
+
+setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered")
+path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/"
+
+files<-dir(path, pattern="Genostats.")
+data<-data.frame(matrix(ncol=5,nrow=length(files)))
+for(k in 1:length(files)){
+  data[k,1:5]<-read.delim(files[k],header=TRUE)
+}
+names(data)<-c("indiv","AA","AB","BB","NN")
+#check the data looks OK and they are the correct type
+str(data)
+
+#checking sites that suck:
+
+genotype.files<-dir(path, pattern="Genotypes.")
+countAA<-0
+countAB<-0
+countBB<-0
+countNN<-0
+test<-read.delim("Genotypes.1A_1A_A1.bam.txt", header=TRUE) #reads in random Genotypes file to get the site names
+site.counts<-data.frame(matrix(nrow=2472,ncol=6)) #nrow=number of windows in your files aka the number of sites (get from the file in the line above)
+window.names<-test[,2:3]
+#This is the loop to start populating the site.counts table. The loops takes along time to run (~ 1hr for 416 indivduals)
+View(site.counts) 
+for(d in 1:2472){
+  countAA<-0
+  countAB<-0
+  countBB<-0
+  countNN<-0
+  for(m in genotype.files){
+    temp<-read.delim(m,header=TRUE)
+    if(temp[d,4]=="AA"){
+      countAA=countAA+1
+    } else if(temp[d,4]=="AB"){
+      countAB=countAB+1
+    } else if(temp[d,4]=="BB"){
+      countBB=countBB+1
+    } else if(temp[d,4]=="NN"){
+     countNN=countNN+1
+    }
+  }
+  site.counts[d,3]<-countAA
+  site.counts[d,4]<-countAB
+  site.counts[d,5]<-countBB
+  site.counts[d,6]<-countNN
+}
+site.counts[,1:2]<-window.names
+names(site.counts)<-c("scaffold","pos","AA","AB","BB","NN")
+
+#Write and save the table
+write.table(site.counts, file="site.counts_hetdev=0.2+WS100K.txt",sep="\t",quote=FALSE,row.names=FALSE)
+site.counts <- read.delim("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/site.counts_hetdev=0.2+WS100K.txt", header = TRUE)
+
+#checking the number of sites with no coverage
+count=0
+for(i in 1:length(site.counts[,1])){
+  if(site.counts[i,6]==540){ 
+    count=count+1
+  }
+}
+
+#found 363 windows/sites with no coverage in the all samples dataset
+
+#number of individuals with no coverage
+count=0
+for(i in 1:length(data[,1])){
+  if(data[i,5]==nrow(test)){
+    count=count+1
+  }
+}
+
+#there are 2 individuals with no coverage in the all samples dataset
+
+#make some filtering decisions. Here, I've decided to keep any individual with <50 markers are removed (91 individuals) + cut sites if there's at least 345 individuals with missing data (~90%). These are probably too lax, but it's worth playing around with.
+
+#For some reason, JKK's windows program duplicated a bunch of sites (aka certain scaffolds were repeated twice in the genotypes/windows file for each individual. Double check your output + remove the duplicate rows). In this set of files, duplicates for 100kb windows begin on 2170
+
+#makes a list of sites to remove
+site.list <- data.frame(matrix(nrow=0, ncol=2))
+names(site.list) <- c("scaffold", "pos")
+
+#Puprose:this code does is that it removes windows that are missing in 90% of the indivduals.
+#Make sure to change count to 90% of total individuals, in this case, I have 416 invidiauls, thus, 0.9 X 416 = 375.
+#change i to number of windows: here 2472, and change the threshold after if depedning on the sample size
+for(i in 1:2472){
+  if(site.counts[i, 6] > 375){
+    site.list <- rbind(site.list, site.counts[i, 1:2])
+  }
+}
+#note: HS found 543 windows in the list.
+#write an output table of the sites list
+write.table(site.list, file="1A_site_list0.2+WS100K_presentunder0.9.txt", sep="\t", quote=FALSE, row.names=FALSE)
+
+#Purpose: Create a list indiv.list of individuals with low coverage to exclude from the analysis. Note: I have already done this (more or less) manually in excell by removing any inviduals if their NN windows is 80% of the total number of widnows.
+#Condition: If the sum of AA, AB, and BB counts for an individual is less than 100, add that individual to indiv.list.
+
+indiv.list <- c()
+for(i in 1:length(data[, 1])){
+  if((data[i, 2] + data[i, 3] + data[i, 4]) < 100){
+    indiv.list <- append(indiv.list, data[i, 1])
+  }
+}
+
+setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/")
+write.table(indiv.list, file="1A_indiv_list0.2+WS100K_presentunder100.txt", sep="\t", quote=FALSE, row.names=FALSE)
+write.table(indiv.list, file="1A_indiv_list.txt", sep="\t", quote=FALSE, row.names=FALSE)
+
+## filter the Genotype.* files generated by JKK's windowing script:
+
+#I'm resetting this from above because now I'm including the parents, but I'm calling the filelist something different just in case I need to go back.
+
+setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/")
+path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/"
+output.path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/1A_g_files/"
+#made the indiv list based on the Genostats* files, so need to change those to read in the Genotypes* files. #
+
+# Modify the filenames in indiv.list to include the prefix "Genotypes."
+indiv.list <- paste0("Genotypes.", indiv.list, ".txt")
+
+# Ensure that the filenames in indiv.list do not include paths, so they can match with geno.files
+indiv.list <- basename(indiv.list)
+
+#loops through Genotypes* files, only reads in individuals to keep (aka not on the list above), only records markers to keep (again, markers not on the list):
+
+for(i in 1:length(genotype.files)){
+  genotypes<-data.frame(matrix(nrow=0,ncol=4))
+  if(!(genotype.files[i]%in%indiv.list)){
+    temp<-read.delim(genotype.files[i],header=FALSE)
+    for(j in 1:length(temp[1:2472,1])){
+      f<-row.names(temp)
+      if(!(f[j]%in%row.names(site.list))){
+        genotypes<-rbind(genotypes,temp[j,])
+      }
+    }
+    write.table(genotypes, file=paste(output.path,"g.",genotype.files[i],sep = ''), row.names=FALSE, col.names=FALSE, quote=FALSE, sep= "\t" )
+  }
+}
+```
