@@ -177,6 +177,9 @@ Note that the third python script outputs lots of data (i.e. .bam.txt file for e
 ## Step 7: Assign parental ancestry (R)
 ## step 8: Windows
 ## Step 9: Second Ancestry loop to filter and output .g files (R)
+This step will process the genotypes, genostats, and windows outputted from the step above. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad inviduals by concanating all the genostats in one table and exlcuded any inviduals that have 80% or of their windows missing or (NN). I also excluded inviduals that are 70% homozugous for either parent or 70% heterozygous. I made a directory with the choosed indivduals then ran the R script for this director. This is why the script did not pickup any bad indviduals, just bad windows.
+**⚠️Note:**  The python script from step8 will output files with header so make sure that header = TRUE when needed.
+
 ```r
 #making sense of windows data:
 #when het dev = 0.4 and windows= 100KB--> THIS IS WHAT I ENDED UP USING, BUT YOU MIGHT WANT TO PLAY WITH WINDOW SIZES
@@ -308,7 +311,7 @@ indiv.list <- basename(indiv.list)
 for(i in 1:length(genotype.files)){
   genotypes<-data.frame(matrix(nrow=0,ncol=4))
   if(!(genotype.files[i]%in%indiv.list)){
-    temp<-read.delim(genotype.files[i],header=FALSE)
+    temp<-read.delim(genotype.files[i],header=TRUE)
     for(j in 1:length(temp[1:2472,1])){
       f<-row.names(temp)
       if(!(f[j]%in%row.names(site.list))){
@@ -319,3 +322,4 @@ for(i in 1:length(genotype.files)){
   }
 }
 ```
+The above loop will produce the g. files needed for the next step. Notice that these files do not have a header. 
