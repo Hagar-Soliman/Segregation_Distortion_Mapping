@@ -1,29 +1,29 @@
 # Segregation_Distortion_Mapping
-follow: dx.doi.org/10.17504/protocols.io.bjnbkman for processing ddRAD data from raw fastqs to vcf (2021).
+Follow: dx.doi.org/10.17504/protocols.io.bjnbkman for processing ddRAD data from raw fastqs to vcf (2021). The pipeline we have here is modified from it.
 Make sure to request **i5** and **i7** fastq files from the sequencing center.
-## Step 1: remove PCR duplicated from each library
+## Step 1: remove PCR duplicates from each library
 Run: `step1_rmdup.sh`
 
-This step removes PCR duplicate using the i5 molecular barcode.
+This step removes PCR duplicates using the i5 molecular barcode.
 
-python script: `step1_rmdup.py` (requires unzipped fastq files), runs in about 2 hours per library.
+Python script: `step1_rmdup.py` (requires unzipped fastq files), runs in about 2 hours per library.
 
 **Required inputs:**
 R1, R2, i5 and i7 fastq files
-Rename files from sequencing center to match format of R1, R2, i5 and i7 fastq files:
-files from YCGA will be supplied as:
+Rename files from the sequencing center to match the format of R1, R2, i5, and i7 fastq files.
+Files from YCGA will be supplied as:
 - I1 = I7 index
 - R1 = Sequencing Read 1
 - R2 = I5 index read
 - R3 = Sequencing Read 2
 
-**⚠️Note:** this Python script will not recognize your fasta files unless their name is ${library}_R1.fastaq. The prefix must be the library name, and the suffix must be R1, R2, i7, or i5. Otherwise, it won't input it.
+**⚠️Note:** This Python script will not recognize your fasta files unless their name is ${library}_R1.fastaq. The prefix MUST be the library name, and the suffix MUST be R1, R2, i7, or i5. Otherwise, it won't input it.
 
-**To prefrom this step:** run `step1_rmdup.sh` script. This bash script will call the python script `step1_rmdup.py`.
-This step will remove duplicates and output fastq.gz files for i5, i7, R1 and R2
+**To prefrom this step:** run `step1_rmdup.sh` script. This bash script will call the Python script `step1_rmdup.py`, so make sure the Python script is in the same directory as the bash file.
+This step will remove duplicates and output fastq.gz files for i5, i7, R1, and R2
 The resulting files will have the same prefix, but will have the suffix .rmdup.1.fastq (forward reads) and .rmdup.2.fastq (reverse reads).
 
-(skipping the step to flip the reads from the Fishman lab protocol, moving straight to next step to demultiplex samples in each library)
+(skipping the step to flip the reads from the Fishman lab protocol, and moving straight to the next step to demultiplex samples in each library)
 
 ## Step 2: Sample Demultiplexing using Stacks
 Run:  `step2_demultiplex.sh`
@@ -33,13 +33,13 @@ Prepare a txt file listing sample IDs and corresponding barcodes. The barcodes c
 
 **⚠️Important Note:** The BestRAD protocol we used to construct the library generates a unique “GG” at the beginning, so you have to add “GG” before you formal barcodes.
  
-**⚠️Important Note:** before running this script, rename fastq.gz files to name format as received from the sequencing center. Otherwise stacks will not recognize the input files
+**⚠️Important Note:** Before running this script, rename fastq.gz files to a name format as received from the sequencing center. Otherwise, stacks will not recognize the input files
 rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_P4_L1_2024_S3_L006_R1_001.fastq.gz (or with underscore before R#)
 
-stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meeaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
-The barcodes file needs to be a tab delimited .txt file.
+Stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
+The barcodes file needs to be a tab-delimited .txt file.
 
-Here are stacks flags:
+Here are Stacks flags:
 ```bash
   p: path to a directory of files.
   P,--paired: files contained within the directory are paired.
@@ -135,13 +135,13 @@ process_radtags -1 pair_1 -2 pair_2 [-b barcode_file] -o out_dir -e enz [-c] [-q
     --barcode-dist-2: the number of allowed mismatches when rescuing paired-end barcodes (defaults to --barcode-dist-1).
 ```
 
-## Step 3: Adaptor Trimmning
+## Step 3: Adaptor Trimming
 Run: `step3_trim.sh`
 
 software: trimmomatic
 
 input:
-4 fastq files per sample generated from stacks
+4 fastq files per sample generated from Stacks
 `step3_adapter.fa` file contain adapter sequences to be trimmed
 
 Details for the adapter sequences file (generated with a text editor):
@@ -168,17 +168,43 @@ Run: `step5_VCF.sh` and `bam_list_loop.sh` to make the bam list.
 
 Software: `BCFtools` and `SAMtools`
 
-Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you. Also, make sure to add the parents and F1. Each VCF should be a linkage group (do not mix individuals from different cross directions unless there is a reason to do so)
+Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you. Also, make sure to add the parents and F1. Each VCF should be a linkage group (do not mix individuals from different cross directions unless there is a reason to do so, which I might do in the future)
 
-**⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
+**⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). This is **important** as VCF filtering will take place downstream when calling ancestry. I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
 ## Step 6: VCF processing using 3 Python scripts
-Note that the third python script outputs lots of data (i.e. .bam.txt file for each bam file in the original aligned directory) AND does not overwrite the generated files if failed and re-ran. Instead, it will just keep adding lines to the preexisity files. Thus, always make sure to remove any generated files if your script failed to run before re-running again. 
+Run: `step6_VCF_prog1.py`, `step6_VCF_prog2.py`, and `step6_VCF_prog3.py` back to back.
+- **step6_VCF_prog1.py:** This script processes a compressed VCF file containing SNP calls and filters variants based on quality and allele balance criteria. It reads a .vcf.gz file for a specified library (e.g., "1A"), extracts SNPs with a minimum mapping quality (MQ ≥ 20), and evaluates allele depth (AD) across samples. For each SNP, it calculates the number of samples with valid calls, average read depth, and average reference allele proportion. SNPs that pass thresholds for sample coverage (≥ 50 samples) and allele balance (between 0.2 and 0.8) are written to a slimmed-down VCF and two read depth summary files. It also tracks the number of SNPs per scaffold and the position of the last SNP, outputting this to a scaffold summary file. You can change the: Min_MQ_score, Min_lines_called, minQ (allele freq),maxQ(allele freq).
+-  **step6_VCF_prog2.py:** This script processes SNPs scaffold-by-scaffold, evaluates read depth and allele balance (excluding two parental lines), and selects high-quality, well-distributed SNPs for further analysis—likely for RAD-tag based genotyping or linkage mapping. **⚠️Important Note:** Make sure to look at the .out file from the first Python program run and see which line contains the two parents and use this info to edit the second Python script (ln 62). Also, don't forget to change the number of individuals.
+-  **step6_VCF_prog3.py:** This script processes a list of selected SNPs (SNPs.limited.txt) and extracts reference and alternate allele depths for each individual across those SNPs, organizing the output into scaffold-specific and sample-specific files. It will output a .txt file for all .bam files in their own directories, along with a .txt file for each chromosome (this will be output in the same directory where this script was ran from). Also, it should output an `all.samples.txt` file.
+
+**⚠️Important Note:** that the third Python script outputs lots of data (.bam.txt file for each bam file in the original aligned directory) AND does not overwrite the generated files if it fails and is re-run. Instead, it will just keep adding lines to the pre-existing files. Thus, always make sure to remove any generated files if your script failed to run before re-running again.
+
 ## Step 7: Assign parental ancestry (R)
+Run: `step7_assign_parental_ancestry.R` as a cluster job, as it will take a few hours to run. Use `step7_run_R_parental_ancestry.sh` to run. 
+
+Before I start this step, I like to copy or move all the .bam.txt (including the parents and F1) files to a directory called, for example, 1A_refAlt and have the script and it's running bash file in the same directory. There is a loop to do so in the Loops file. Pia Schward edited this file so it can run parallel jobs to run faster.
+
+This R script compares allele depths from two parental lines (IM62 and IMPO) to classify each SNP site as REF (IMPO), ALT(IM62), HET, or missing (NN), then uses this classification to polarize genotypes in a set of recombinant individuals, flipping allele counts where necessary to align with parental ancestry. For the polarization step, if parents are opposite (e.g., IMPO = REF, IM62 = ALT), it retains allele counts. - If parents are flipped (IMPO = ALT, IM62 = REF), swaps ref and alt counts to align with ancestry.
+
+Output: `parental_ancestry.tt`, update the `.nam.txt' file to make sure they are poralized. and `all.scaffold_*txt.`
+
 ## step 8: Windows
+Run: `step8_window.py`. Use `step8_window_run.sh`
+
+This step averages across a window based on the number of SNPs/ number of reads/ some range. You can define heterozygote calls as het deviation (I changed it to 0.2 to make it stricter when calling heterozygous windows). This will output 3 files for each individual. 1) a Genotypes file, 2) a genostats file (total number of windows with AA, AB, NN genotypes), and 3) a windows file (which I think is a count for each site that was used to build the genotypes file).
+**⚠️Important Note:** I hated how this script outputs files with no headers, so I added a few Python lines to add headers to the output files. However, downstream, these headers can cause an issue, which I tried to fix in the downstream script. For now, I added a # in front of those lines to just avoid the headache altogether. 
+
 ## Step 9: Second Ancestry loop to filter and output .g files (R)
-This step will process the genotypes, genostats, and windows outputted from the step above. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad inviduals by concanating all the genostats in one table and exlcuded any inviduals that have 80% or of their windows missing or (NN). I also excluded inviduals that are 70% homozugous for either parent or 70% heterozygous. I made a directory with the choosed indivduals then ran the R script for this director. This is why the script did not pickup any bad indviduals, just bad windows.
-**⚠️Note:**  The python script from step8 will output files with header so make sure that header = TRUE when needed.
+This step will process the genotypes, genostats, and windows outputted from the step 8. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad individuals by concatenating all the genostats in one table (loop can be found in the Loops file) and excluded any individuals that:
+**(1)** have 80% or of their windows missing or (NN)
+**(2)** are 70% homozygous for the backcrossed parent or 70% heterozygous.
+**(3)** are 70% homozygous for the other parent. Although BB windows are usually an AB window that was miscalled, but if it is at such high percentage, The indivdual is probably bad.  
+I then made a new direcotry, copied all the files, and deleted all the indivduals I exluded from the above critera. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
+
+Also, I ran this R script in the cluster's R line by line rather than a job like step 8.
+
+**⚠️Note:**  The Python script from step 8 will output files with a header if you decided to use the header line in the script, so make sure that header = TRUE if that was the case.
 
 ```r
 #making sense of windows data:
