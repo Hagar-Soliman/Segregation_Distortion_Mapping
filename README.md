@@ -39,102 +39,6 @@ rename to format PS_P4_L1_2024_S3_L006.R1_001.fastq.gz (same for R2 file) or PS_
 Stacks is picky about the length of the file names for each sample. picky how many "columns" it can have (meaning how many sets of characters separated by _ (did not test if the issue is the overall number of characters or if _ creates a new "column" to the file)
 The barcodes file needs to be a tab-delimited .txt file.
 
-Here are Stacks flags:
-```bash
-  p: path to a directory of files.
-  P,--paired: files contained within the directory are paired.
-  I,--interleaved: specify that the paired-end reads are interleaved in single files.
-  i: input file type, either 'fastq', 'gzfastq' (gzipped fastq), 'bam', or 'bustard' (default: guess, or gzfastq if unable to).
-  b: path to a file containing barcodes for this run, omit to ignore any barcoding.
-  o: path to output the processed files.
-  f: path to the input file if processing single-end sequences.
-  1: first input file in a set of paired-end sequences.
-  2: second input file in a set of paired-end sequences.
-  c,--clean: clean data, remove any read with an uncalled base ('N').
-  q,--quality: discard reads with low quality (phred) scores.
-  r,--rescue: rescue barcodes and RAD-Tags.
-  t: truncate final read length to this value.
-  D: capture discarded reads to a file.
-  E: specify how quality scores are encoded, 'phred33' (Illumina 1.8+/Sanger, default) or 'phred64' (Illumina 1.3-1.5).
-  w: set the size of the sliding window as a fraction of the read length, between 0 and 1 (default 0.15).
-  s: set the score limit. If the average score within the sliding window drops below this value, the read is discarded (default 10).
-  y: output type, either 'fastq', 'gzfastq', 'fasta', or 'gzfasta' (default: match input type).
-
-  Barcode options:
-    --inline-null:   barcode is inline with sequence, occurs only on single-end read (default).
-    --index-null:    barcode is provded in FASTQ header (Illumina i5 or i7 read).
-    --null-index:    barcode is provded in FASTQ header (Illumina i7 read if both i5 and i7 read are provided).
-    --inline-inline: barcode is inline with sequence, occurs on single and paired-end read.
-    --index-index:   barcode is provded in FASTQ header (Illumina i5 and i7 reads).
-    --inline-index:  barcode is inline with sequence on single-end read and occurs in FASTQ header (from either i5 or i7 read).
-    --index-inline:  barcode occurs in FASTQ header (Illumina i5 or i7 read) and is inline with single-end sequence (for single-end data) on paired-end read (for paired-end data).
-
-process_radtags 2.59
-process_radtags -p in_dir [--paired [--interleaved]] [-b barcode_file] -o out_dir -e enz [-c] [-q] [-r] [-t len]
-process_radtags -f in_file [-b barcode_file] -o out_dir -e enz [-c] [-q] [-r] [-t len]
-process_radtags -1 pair_1 -2 pair_2 [-b barcode_file] -o out_dir -e enz [-c] [-q] [-r] [-t len]
-
-  p: path to a directory of files.
-  P,--paired: files contained within the directory are paired.
-  I,--interleaved: specify that the paired-end reads are interleaved in single files.
-  i: input file type, either 'fastq', 'gzfastq' (gzipped fastq), 'bam', or 'bustard' (default: guess, or gzfastq if unable to).
-  b: path to a file containing barcodes for this run, omit to ignore any barcoding.
-  o: path to output the processed files.
-  f: path to the input file if processing single-end sequences.
-  1: first input file in a set of paired-end sequences.
-  2: second input file in a set of paired-end sequences.
-  c,--clean: clean data, remove any read with an uncalled base ('N').
-  q,--quality: discard reads with low quality (phred) scores.
-  r,--rescue: rescue barcodes and RAD-Tags.
-  t: truncate final read length to this value.
-  D: capture discarded reads to a file.
-  E: specify how quality scores are encoded, 'phred33' (Illumina 1.8+/Sanger, default) or 'phred64' (Illumina 1.3-1.5).
-  w: set the size of the sliding window as a fraction of the read length, between 0 and 1 (default 0.15).
-  s: set the score limit. If the average score within the sliding window drops below this value, the read is discarded (default 10).
-  y: output type, either 'fastq', 'gzfastq', 'fasta', or 'gzfasta' (default: match input type).
-
-  Barcode options:
-    --inline-null:   barcode is inline with sequence, occurs only on single-end read (default).
-    --index-null:    barcode is provded in FASTQ header (Illumina i5 or i7 read).
-    --null-index:    barcode is provded in FASTQ header (Illumina i7 read if both i5 and i7 read are provided).
-    --inline-inline: barcode is inline with sequence, occurs on single and paired-end read.
-    --index-index:   barcode is provded in FASTQ header (Illumina i5 and i7 reads).
-    --inline-index:  barcode is inline with sequence on single-end read and occurs in FASTQ header (from either i5 or i7 read).
-    --index-inline:  barcode occurs in FASTQ header (Illumina i5 or i7 read) and is inline with single-end sequence (for single-end data) on paired-end read (for paired-end data).
-
-  Restriction enzyme options:
-    -e <enz>, --renz-1 <enz>: provide the restriction enzyme used (cut site occurs on single-end read)
-    --renz-2 <enz>: if a double digest was used, provide the second restriction enzyme used (cut site occurs on the paired-end read).
-    Currently supported enzymes include:
-      'aciI', 'ageI', 'aluI', 'apaLI', 'apeKI', 'apoI', 'aseI', 'bamHI', 
-      'bbvCI', 'bfaI', 'bfuCI', 'bgIII', 'bsaHI', 'bspDI', 'bstYI', 'btgI', 
-      'cac8I', 'claI', 'csp6I', 'ddeI', 'dpnII', 'eaeI', 'ecoRI', 'ecoRV', 
-      'ecoT22I', 'haeIII', 'hinP1I', 'hindIII', 'hpaII', 'hpyCH4IV', 'kpnI', 'mluCI', 
-      'mseI', 'mslI', 'mspI', 'ncoI', 'ndeI', 'ngoMIV', 'nheI', 'nlaIII', 
-      'notI', 'nsiI', 'nspI', 'pacI', 'pspXI', 'pstI', 'rsaI', 'sacI', 
-      'sau3AI', 'sbfI', 'sexAI', 'sgrAI', 'speI', 'sphI', 'taqI', 'xbaI', or 
-      'xhoI'
-
-  Protocol-specific options:
-    --bestrad: library was generated using BestRAD, check for restriction enzyme on either read and potentially tranpose reads.
-
-  Adapter options:
-    --adapter-1 <sequence>: provide adaptor sequence that may occur on the single-end read for filtering.
-    --adapter-2 <sequence>: provide adaptor sequence that may occur on the paired-read for filtering.
-      --adapter-mm <mismatches>: number of mismatches allowed in the adapter sequence.
-
-  Output options:
-    --retain-header: retain unmodified FASTQ headers in the output.
-    --merge: if no barcodes are specified, merge all input files into a single output file.
-
-  Advanced options:
-    --filter-illumina: discard reads that have been marked by Illumina's chastity/purity filter as failing.
-    --disable-rad-check: disable checking if the RAD cut site is intact.
-    --len-limit <limit>: specify a minimum sequence length (useful if your data has already been trimmed).
-    --barcode-dist-1: the number of allowed mismatches when rescuing single-end barcodes (default 1).
-    --barcode-dist-2: the number of allowed mismatches when rescuing paired-end barcodes (defaults to --barcode-dist-1).
-```
-
 ## Step 3: Adaptor Trimming
 Run: `step3_trim.sh`
 
@@ -197,9 +101,13 @@ This step averages across a window based on the number of SNPs/ number of reads/
 
 ## Step 9: Second Ancestry loop to filter and output .g files (R)
 This step will process the genotypes, genostats, and windows outputted from the step 8. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad individuals by concatenating all the genostats in one table (loop can be found in the Loops file) and excluded any individuals that:
+
 **(1)** have 80% or of their windows missing or (NN)
+
 **(2)** are 70% homozygous for the backcrossed parent or 70% heterozygous.
+
 **(3)** are 70% homozygous for the other parent. Although BB windows are usually an AB window that was miscalled, but if it is at such high percentage, The indivdual is probably bad.  
+
 I then made a new direcotry, copied all the files, and deleted all the indivduals I exluded from the above critera. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
 
 Also, I ran this R script in the cluster's R line by line rather than a job like step 8.
