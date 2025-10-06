@@ -1,0 +1,14 @@
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_01 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_02 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_03 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_04 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_05 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_06 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_07 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_08 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_09 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_10 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_11 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_12 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_13 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
+module load Python/2.7.18-GCCcore-10.2.0 && python step13_genotype.pp.py Chr_14 1A_filtered_genotypes_err_rates.txt 1A_low_genotype_err_list.txt 1A_intrascaff_v3.txt
