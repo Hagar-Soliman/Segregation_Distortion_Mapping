@@ -1,0 +1,156 @@
+---
+title: "1A_googa_proccessing"
+output: html_document
+date: "2025-09-29"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("/home/hks25/ycga_work/maps/1A_map/")
+library(tidyr)
+library(dplyr)
+library(jsonlite)
+library(qtl)
+library(ggplot2)
+library(cowplot)
+```
+
+First, let's prepare the markers/headers/the first 3 rows that will into the genotype matrix the way that rQTL wants it
+
+```{r prepare genotype matrix's header}
+
+#Load the recombination fraction file and re-formated to be used to make the genotype matrix
+# Step 1: Load the file
+markers <- read.table("1A_intrascaff_v3.txt", header = FALSE, sep = "", stringsAsFactors = FALSE)
+
+# Step 2: Rename columns for clarity. We are only going to use the accumulative recombination fraction
+colnames(markers) <- c("chr", "pos", "unused", "value")
+
+# Step 3: Convert chromosome labels from "Chr_01" to numeric (1–14)
+markers <- markers %>%
+  mutate(chr = as.numeric(gsub("Chr_", "", chr)))
+
+# Step 4: Add unique marker IDs (1 to nrow)
+markers <- markers %>%
+  mutate(marker = seq_len(n()))
+
+# Step 5: Reorder and select desired columns
+markers_clean <- markers %>%
+  select(chr, value, marker)
+
+# Reorder columns if needed
+markers_clean <- markers_clean %>% select(marker, chr, value)
+
+# Transpose to wide format
+marker_row <- c("", "", markers_clean$marker) #extract each column as a vectors
+chr_row    <- c("", "", markers_clean$chr)
+rf_row     <- c("", "", markers_clean$value)
+header_matrix <- rbind(marker_row, chr_row, rf_row)
+
+# Step 6 save
+write.table(header_matrix, "1A_rqtl_markers.csv", sep = ",", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+```
+
+Make the genotype matrix
+
+```{r Make Genotype Matrix}
+#Load the data
+pp <- read.table("1A_allmarkers.txt", header = FALSE, sep = "\t",
+                 col.names = c("LG", "plantID", "pos", "obs", "P_AA", "P_AB", "P_BB"))
+
+# Assign discrete genotype calls
+pp <- pp %>%
+  mutate(geno = case_when(
+    P_AA > 0.9 ~ "A",
+    P_AB > 0.9 ~ "H",
+    P_BB > 0.9 ~ "B",
+    TRUE ~ "-"
+  ))
+
+# Check the percentage of each marker (make sure that there are tons of BB or NA)
+pp %>%
+  count(geno) %>%
+  mutate(percent = round(100 * n / sum(n), 2))
+
+# Step 1: Convert LG to numeric position index (1–14)
+pp <- pp %>%
+  mutate(pos_numeric = as.numeric(gsub("Chr_", "", LG)))  # assumes LG is like "Chr_01"
+
+# Step 2: Select relevant columns
+pp_clean <- pp %>%
+  select(plantID, marker, geno)
+
+# Step 3: Pivot to wide format
+geno_matrix <- pp_clean %>%
+  pivot_wider(names_from = marker, values_from = geno)
+
+# Step 4: Add dummy phenotype column
+geno_matrix <- geno_matrix %>%
+  mutate(pheno = 1) %>%
+  relocate(pheno, .after = plantID)
+
+# Save the data!
+write.table(geno_matrix, "1A_geno_matrix_raw.csv", sep = ",",
+            row.names = FALSE, col.names = TRUE, quote = FALSE)
+
+# Step 5: Drop plantID column (rows = individuals)
+geno_matrix <- geno_matrix %>% select(-plantID)
+
+```
+To create the genotype map with the correct header row, I decided to use excel: I opened both the 1A_rqtl_markers.csv ans the 1A_geno_matrix_raw.csv" files on my local computer and usied the rqtl markers file as the header. I also replaced all the B genotype calls to H. This might be somthing I have to think about in the future. but for now I am documeting it. I saved the rQTL-comptaible file as a new CSV files called: 1A_geno_matrix_rqtl.csv
+
+
+Now, we start uploading our rQTL formating genotype matrix and play with rQTL
+
+```{r rQTL}
+
+map1A <- read.cross(format = "csv",
+                    dir = "",
+                    file = "1A_geno_matrix_rqtl.csv",
+                    genotypes = c("A", "H"),
+                    na.strings = "N",
+                    crosstype = "bc")
+
+map1A <- jittermap(map1A) #This nudges overlapping markers slightly apart for visualization and mapping purposes. if two markers have the exact rf
+
+map1A <- est.rf(map1A) #this estimates the recombination fraction for all markers, it will take a while to run.
+
+map1Atest <- est.map(map1A)#I am honestly not sure what is the difference between this one and est.rf. but the est.rf will produce LODscore I think but the est.map makes a figure
+
+plot.map(map1A) #plot the linkage map
+
+plotRF(map1A) #make a headmap of recombination fraction to view inversions or weird stuff
+
+```
+
+Segregation distortoion map
+```{r segregation distortion}
+gt <- geno.table(map1A, scanone.output=TRUE)
+par(mfrow=c(2,1)) #make sure the plots are ordered properly
+plot(gt, ylab=expression(paste(-log[10], " P-value"))) #plotting the log score
+plot(gt, lod=3, ylab="Genotype frequency")
+abline(h=c(0.25, 0.5), lty=2, col="gray")
+
+#Extract the AA nad AB genotype frequncey and plot them
+gt_long <- gt %>%
+  select(chr, pos, AA, AB) %>%
+  pivot_longer(cols = c(AA, AB), names_to = "genotype", values_to = "frequency")
+
+library(ggplot2)
+
+ggplot(gt_long, aes(x = pos, y = frequency, color = genotype)) +
+  geom_point(alpha = 0.8) +
+  facet_wrap(~chr, scales = "free_x", nrow = 2) +
+  scale_color_manual(values = c("AA" = "#007D34", "AB" = "#4F007D")) +
+  labs(x = "Genetic position (cM)", y = "Genotype frequency",
+       title = "Genotype Frequencies for 1A Map (GN1 X IMPO)") +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
+    strip.background = element_rect(fill = "gray90", color = "black"),
+    strip.text = element_text(face = "bold"), plot.title = element_text(hjust = 0.5)
+  )
+
+```
