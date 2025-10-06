@@ -14,9 +14,9 @@ out1 = open(f"{output_directory}/window.{name}.txt", "w")
 src = open(LineID, "r")
 
 # Add headers
-out1.write("Scaffold\tWindowStart\tNumSNPs\tREF_Reads\tALT_Reads\n")
-out2.write("Sample\tScaffold\tWindowStart\tGenotype\n")
-out3.write("Sample\tAA_Count\tAB_Count\tBB_Count\tNN_Count\n")
+#out1.write("Scaffold\tWindowStart\tNumSNPs\tREF_Reads\tALT_Reads\n")
+#out2.write("Sample\tScaffold\tWindowStart\tGenotype\n")
+#out3.write("Sample\tAA_Count\tAB_Count\tBB_Count\tNN_Count\n")
 
 
 blacklist={}
