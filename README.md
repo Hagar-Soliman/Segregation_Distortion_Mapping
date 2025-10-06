@@ -100,7 +100,7 @@ This step averages across a window based on the number of SNPs/ number of reads/
 **⚠️Important Note:** I hated how this script outputs files with no headers, so I added a few Python lines to add headers to the output files. However, downstream, these headers can cause an issue, which I tried to fix in the downstream script. For now, I added a # in front of those lines to just avoid the headache altogether. 
 
 ## Step 9: Second Ancestry loop to filter and output .g files (R)
-This step will process the genotypes, genostats, and windows outputted from the step 8. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad individuals by concatenating all the genostats in one table (loop can be found in the Loops file) and excluded any individuals that:
+This step will process the genotypes, genostats, and windows outputted from step 8. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad individuals by concatenating all the genostats in one table (loop can be found in the Loops file) and excluded any individuals that:
 
 **(1)** have 80% or of their windows missing or (NN)
 
