@@ -108,7 +108,7 @@ This step will process the genotypes, genostats, and windows outputted from step
 
 **(3)** are 70% homozygous for the other parent. Although BB windows are usually an AB window that was miscalled, but if it is at such high percentage, The indivdual is probably bad.  
 
-I then made a new direcotry, copied all the files, and deleted all the indivduals I exluded from the above critera. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
+I then made a new directory, copied all the files, and deleted all the individuals I excluded from the above criteria. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
 
 Also, I ran this R script in the cluster's R line by line rather than a job like step 8.
 
@@ -257,3 +257,59 @@ for(i in 1:length(genotype.files)){
 }
 ```
 The above loop will produce the g. files needed for the next step. Notice that these files do not have a header. 
+
+## Step 10 GOOGA: Galculate Genotype Error Rate
+First, I moved all the .g files into a new directory called 1A_g_files. In this directory, have those scripts so they can run with no problems
+
+Run: `step10_calc_genotype_err_rate.py` as a parallel job using this job list `step10_genotypes_list.txt`. This runs for each sample; use `step10_sample_list_loop.sh` to make the list.
+```bash
+module load dSQ
+dsq --job-file step10_genotypes_list.txt --mem-per-cpu 4g -t 20:00 --mail-type ALL
+#then run the sbatch code it will generate
+```
+Note: this Python script cannot run with barebone Python 2, this is why I am loading `SciPy-bundle/2020.11-foss-2020b-Python-2.7.18`
+
+This Python script will generate a file for each .g file, and each file will contain one line. I used a loop called `combine_genotype_err_loop.sh` to combine them in a txt file called `1A_combined_genotypes_err.txt`. In this step, you will notice that there are errors in calculating the genotype error rate for some individuals. This happens, I believe, due to big gaps in some of the chromosomes that give that error. I have modified that Python script to prevent this error. But I still had some problematic individuals (just one or two) I exlcuded them and made a new list named `1A_filtered_genotypes_err_rates.txt`.
+
+## Step 11 GOOGA: Calculate intra-scaffold recombinational fractions
+Run: `step11_hmm.intrascaff.R.py` using `step11_intrascaff_rec_rates.sh`. This will take a few hours.
+
+Input: `1A_filtered_genotypes_err_rates.txt`, a random `g.Genotypes.PlantID.bam.txt` to get the markers names, `1A_low_genotype_err_list.txt`, which is just a list of the individuals in the genotype error rates file (make sure it's the naked name with no `.bam.txt`. Finally, an empty `bad.marks.txt` 
+
+The output file (1A_intrascaff_v1.txt) has your first linkage map! Column 1 is the chromosome, column 2 is the marker. In column 3, each value is the intrascaffold recombination rate between the marker for that row and the
+marker below. The units on this are in probability of recombination (or cM/100). The maximum value here is 0.25 (this should not be a surprise because the max recombination rate is .5 (ie. unlinked) and there is a 50% chance that recombination occurs before the marker and a 50% chance it occurs after the marker (thus .25 each way). This may mean that a marker is either in the wrong location(in need of GOOGA!) or just poorly fits the genotype error algorithm and should have been discarded.
+
+How do you determine which of these possibilities is correct? Well, we can discard these markers and see if there are still large recombination distances in the same spots. If it is the case, then our
+chromosome needs reordering in Googa. If this fixes the problem, then the marker was simply bad.
+
+Ok, let's get rid of the bad markers. So, highlight each of the crappy markers in yellow in Excel. There is likely either one maker with .25 or two makers. Remember, the recombination rate is calculated with the marker below it. So get rid of the marker below the .25 in case of a single marker with a .25. If there are two markers back to back with .25, then get rid of the second one. Compile the list of bad markers into your previously created tab-delimited text file named `bad.marks.txt`. You only need two columns, Chromosome and Marker, but do not put in a header line. Now we can rerun the program calculating intrascaffold error rates with the `bad.marks` version of the last program and see if we get rid of the 0.25 errors. It is normal for the last marker in the chromosome to have a large negative value, so don't delete that. 
+
+## Step 12: GOOGA: Calculate Rntra-scaffold Recombinational Fractions After Removing Bad Markers
+Run: `step12_hmm.intrascaff.R.badmarks.py` using `step12_intrascaff_rec_badmarks.sh`. This will take a few hours.
+
+Input: `1A_filtered_genotypes_err_rates.txt`, a random genotype `g.Genotypes.1A_1A_D8.bam.txt`, a list of individuals "1A_low_genotype_err_list.txt`, and `bad.marks.txt`.
+
+Output: `1A_intrascaff_v2.txt`
+
+## Step 13: Estimate Genotypes at Each Locus for Each Individual
+Before running this Python script, we will need to calculate the cumulative recombination fraction for each marker for each scaffold/chromosome. I used Excel to do so using the following instructions:
+- First marker, cM = 0
+- Second marker, cM = 100*D2
+- Third maker, cM= 100*SUM($D$2:D3), then drag till the end of the chromosome
+- Assuming your recombination fractions are in column D, with the first marker starting in cell D2. Start each chromosome over with this same code and then fill down to the end of the chromosome with the formula for the 3rd marker. Once done, copy and paste values only into a new sheet to avoid missing values. The final file should look like `1A_intrascaff_v3.txt`. The wrong format of this file can cause errors.
+
+Run: `step13_run_genotype.pp.txt` that uses `step13_genotype.pp.py`. This should run as a parallel job on the cluster for each linkage group (i.e. Chr_01..14)
+
+Output: This script outputs 14 files for each chromosome with posterior probabilities for each marker. `Chr_01..Chr_14.pp.txt`
+
+I then use the following code to concatenate all of them
+```bash
+cat Chr_{01..14}.pp.txt > 1A_allmarker.txt
+```
+
+Then we move to R to make our genotype matrix and use rQTL to plot our data!!!!
+
+The R script is called `1A_googa_processing.Rmd`. I usually do this on the cluster's R
+
+
+
