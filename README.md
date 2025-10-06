@@ -302,7 +302,7 @@ Run: `step13_run_genotype.pp.txt` that uses `step13_genotype.pp.py`. This should
 
 Output: This script outputs 14 files for each chromosome with posterior probabilities for each marker. `Chr_01..Chr_14.pp.txt`
 
-I then use the following code to concatenate all of them
+I then use the following code to concatenate all of them. Make sure that all chromosomes are present after concatenating, because the length of this file (i.e. the number of rows) should equal the number of markers in `1A_intrascaff_v3.txt`
 ```bash
 cat Chr_{01..14}.pp.txt > 1A_allmarker.txt
 ```
