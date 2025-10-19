@@ -110,7 +110,7 @@ This step will process the genotypes, genostats, and windows outputted from step
 
 I then made a new directory, copied all the files, and deleted all the individuals I excluded from the above criteria. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
 
-Also, I ran this R script in the cluster's R line by line rather than a job like step 8.
+Also, I ran this R script in the cluster's R line by line rather than a job like step 8. Update: When I made the window smaller (50kb) and had 963 indivduals, extracting the sites loops took almost 6 hrs. So, from now onward, I will submit the R script as a cluster job.
 
 **⚠️Note:**  The Python script from step 8 will output files with a header if you decided to use the header line in the script, so make sure that header = TRUE if that was the case.
 
