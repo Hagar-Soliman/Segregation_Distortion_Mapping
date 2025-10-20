@@ -10,5 +10,5 @@ for file in g.Genotypes.*.bam.txt; do
     sampleID=$(basename "$file" | sed 's/^g\.Genotypes\.//' | sed 's/\.bam\.txt$//')
 
     # Write the command line to the job list
-    echo "python step10_calc_genotype_err_rate.py $sampleID" >> "$output_file"
+    echo "module load SciPy-bundle/2020.11-foss-2020b-Python-2.7.18 && python step10_calc_genotype_err_rate.py $sampleID" >> "$output_file"
 done
