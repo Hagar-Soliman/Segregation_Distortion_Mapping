@@ -262,6 +262,8 @@ The above loop will produce the g. files needed for the next step. Notice that t
 First, I moved all the .g files into a new directory called 1A_g_files. In this directory, have those scripts so they can run with no problems
 
 Run: `step10_calc_genotype_err_rate.py` as a parallel job using this job list `step10_genotypes_list.txt`. This runs for each sample; use `step10_sample_list_loop.sh` to make the list.
+
+**⚠️Important Note:** make sure to make an empty file called `bad.marks.txt` or the script won't run
 ```bash
 module load dSQ
 dsq --job-file step10_genotypes_list.txt --mem-per-cpu 4g -t 20:00 --mail-type ALL
