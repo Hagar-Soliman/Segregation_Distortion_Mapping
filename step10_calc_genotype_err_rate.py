@@ -1,4 +1,5 @@
-#HS: this script was edited in 10/21/2025 for Map 3A and to try to solve the math domain error I keep getting 
+#HS: this script was edited in 10/21/2025 for Map 3A and to try to solve the math domain error I keep getting (it worked)
+#IMPORTANT: MAKE SURE TO EDIT THE GENOTYPE RATIOS AND PROBABILITIES based on the map direction 
 
 # likelihoods based on window calls as input
 # all plants for a scaff together in all*txt
@@ -246,6 +247,7 @@ e_rates=[0.01, 0.01,0.01]
 zsol= calc_v0(e_rates) 
 
 print plantID,calls_total,zsol[0],zsol[1],zsol[2],zsol[3]
+
 
 
 
