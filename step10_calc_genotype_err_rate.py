@@ -1,3 +1,5 @@
+#HS: this script was edited in 10/21/2025 for Map 3A and to try to solve the math domain error I keep getting 
+
 # likelihoods based on window calls as input
 # all plants for a scaff together in all*txt
 # reports likelihood of observed states in forward_backward
@@ -19,95 +21,134 @@ zy=0.00001 # edge for bounds
 rbp = 0.1/1000000.0  # recombination rate per bp (morgans / megabase)
 
 
-def calc_v0(e_rates): 
-	def scipy_ln_like0(x):
-		return -LL(x)
+def calc_v0(e_rates):
+    def scipy_ln_like0(x):
+        # Compute log-likelihood; if LL returns NaN or non-finite, return a large positive value
+        val = LL(x)
+        if val is None:
+            return 1e300
+        try:
+            # catch NaN or infinite values
+            if val != val or val == float('inf') or val == float('-inf'):
+                return 1e300
+        except Exception:
+            return 1e300
+        return -val
 
-	bounds = [ (zy,0.5), (zy,0.5), (zy,1.0-zy) ]
-	best, val, d = optimize.fmin_l_bfgs_b(scipy_ln_like0, e_rates, approx_grad=True, bounds=bounds)
-	solution = list(best)
-	ln_l = -scipy_ln_like0(solution)
-	solution.append(ln_l)
-	#zbob=ln_like0(parents,famStr,RRL,RAL,AAL,FLnum,1, list(best),matplant)
-	return solution
-
-
-
-def foward_backward(obs, states, start_p,transition_probability,er):
-
-	alpha=[{} for j in range(len(obs))] # forward:: alpha[j][X] is probability that true genotye is X at marker j (starts at 0)
-	lnFactor=0.0
-
-	for y in states:
-		alpha[0][y] = start_p[y] * emission_probability(y,obs[0],er)
-
-	for t in xrange(1, len(obs)):
-        	for y in states:
-			alpha[t][y] = 0.0
-			for y0 in states: # y0 is state at t-1
-
-				alpha[t][y] +=alpha[t-1][y0] * transition_probability[t-1][y0][y] * emission_probability(y,obs[t],er)
-
-		normalizer = max(alpha[t]['AA'],alpha[t]['AB'],alpha[t]['BB'])
-		#print alpha[t]['AA'],alpha[t]['AB'],alpha[t]['BB']
-		lnFactor+=log(normalizer)
-        	for y in states:
-			alpha[t][y] = alpha[t][y]/normalizer
-
-				
-	# Likelihood of observed states
-	LLobs=lnFactor+log(alpha[len(obs)-1]['AA']+alpha[len(obs)-1]['AB']+alpha[len(obs)-1]['BB'])
-
-	beta=[{} for j in range(len(obs))] # backward:: beta[j][X] is probability that true genotye is X at marker j (starts at 0)
-	for y in states:
-		beta[len(obs)-1][y] = 1.0 #start_p[y]
-
-	for t in xrange(len(obs)-2,-1,-1):
-		#beta.append({})
-        	for y in states:
-			beta[t][y] = 0.0 # y is state at t
-			for y0 in states: # y0 is state at t+1
-				beta[t][y] +=beta[t+1][y0] * transition_probability[t][y][y0] * emission_probability(y0,obs[t+1],er)
-
-		normalizer = max(beta[t]['AA'],beta[t]['AB'],beta[t]['BB'])
-        	for y in states:
-			beta[t][y] = beta[t][y]/normalizer
-	#print alpha
-	#print beta
-
-	return alpha,beta,LLobs
+    bounds = [(zy, 0.5), (zy, 0.5), (zy, 1.0 - zy)]
+    best, val, d = optimize.fmin_l_bfgs_b(scipy_ln_like0, e_rates, approx_grad=True, bounds=bounds)
+    solution = list(best)
+    ln_l = -scipy_ln_like0(solution)
+    solution.append(ln_l)
+    return solution
 
 
-def emission_probability(genotype,calledG,x): # cc [ AA,AB,BB,NN ] 
 
-	e1 = x[0] # probability of sequencing error to het
-	e2 = x[1]
-	beta=x[2]
+def foward_backward(obs, states, start_p, transition_probability, er):
+    # Forward-backward with numeric guards
+    epsilon = 1e-200
 
-	if calledG == 'NN':
-		return 1.0
-	elif calledG =='AA':
-		if genotype=='AA':
-			prob = 1 - e1 - e2 
-		elif genotype=='AB':
-			prob = beta/2
-		elif genotype=='BB':
-			prob = e2
-	elif calledG =='AB':
-		if genotype=='AA' or genotype=='BB':
-			prob = e1 
-		elif genotype=='AB':
-			prob = 1-beta
-	elif calledG =='BB':
-		if genotype=='AA':
-			prob = e2 
-		elif genotype=='AB':
-			prob = beta/2
-		elif genotype=='BB':
-			prob = 1-e1-e2
+    L = len(obs)
+    alpha = [dict() for _ in range(L)]
+    lnFactor = 0.0
 
-	return prob
-	
+    # initialize alpha[0] and ensure non-zero values, then normalize
+    for y in states:
+        alpha[0][y] = max(start_p.get(y, 0.0) * emission_probability(y, obs[0], er), epsilon)
+
+    # normalize alpha[0]
+    s0 = alpha[0]['AA'] + alpha[0]['AB'] + alpha[0]['BB']
+    s0 = max(s0, epsilon)
+    for y in states:
+        alpha[0][y] /= s0
+    lnFactor += log(s0)
+
+    # forward pass
+    for t in range(1, L):
+        for y in states:
+            acc = 0.0
+            for y0 in states:
+                # multiply previous scaled alpha, transition and emission
+                acc += alpha[t - 1][y0] * transition_probability[t - 1][y0][y] * emission_probability(y, obs[t], er)
+            # guard acc
+            alpha[t][y] = max(acc, 0.0)
+
+        # compute normalizer; use epsilon if necessary
+        normalizer = max(alpha[t]['AA'], alpha[t]['AB'], alpha[t]['BB'], epsilon)
+        # if normalizer not finite, return a safe failure
+        if not (normalizer == normalizer and normalizer != float('inf')):
+            # return early with an indicator that LL is invalid
+            return alpha, None, float('nan')
+
+        lnFactor += log(normalizer)
+        for y in states:
+            alpha[t][y] = alpha[t][y] / normalizer
+
+    # final sum and LLobs
+    final_sum = alpha[L - 1]['AA'] + alpha[L - 1]['AB'] + alpha[L - 1]['BB']
+    final_sum = max(final_sum, epsilon)
+    LLobs = lnFactor + log(final_sum)
+
+    # backward pass
+    beta = [dict() for _ in range(L)]
+    for y in states:
+        beta[L - 1][y] = 1.0
+
+    for t in range(L - 2, -1, -1):
+        for y in states:
+            acc = 0.0
+            for y0 in states:
+                acc += beta[t + 1][y0] * transition_probability[t][y][y0] * emission_probability(y0, obs[t + 1], er)
+            beta[t][y] = max(acc, 0.0)
+
+        normalizer = max(beta[t]['AA'], beta[t]['AB'], beta[t]['BB'], epsilon)
+        if not (normalizer == normalizer and normalizer != float('inf')):
+            return alpha, None, float('nan')
+        for y in states:
+            beta[t][y] = beta[t][y] / normalizer
+
+    return alpha, beta, LLobs
+
+
+def emission_probability(genotype, calledG, x):  # cc [ AA, AB, BB, NN ]
+    # clamp probabilities to avoid 0 or >1 values
+    epsilon = 1e-200
+
+    e1 = x[0]  # probability of sequencing error to het
+    e2 = x[1]  # probability of sequencing error to homozygous opposite
+    beta = x[2]  # probability of true het miscall
+
+    # default fallback
+    prob = epsilon
+
+    if calledG == 'NN':
+        return 1.0
+
+    elif calledG == 'AA':
+        if genotype == 'AA':
+            prob = 1 - e1 - e2
+        elif genotype == 'AB':
+            prob = beta / 2.0
+        elif genotype == 'BB':
+            prob = e2 + 0.01
+
+    elif calledG == 'AB':
+        if genotype == 'AA' or genotype == 'BB':
+            prob = e1
+        elif genotype == 'AB':
+            prob = 1 - beta
+
+    elif calledG == 'BB':
+        if genotype == 'AA':
+            prob = e2
+        elif genotype == 'AB':
+            prob = beta / 2.0
+        elif genotype == 'BB':
+            prob = 1 - e1 - e2
+
+    # clamp into safe numeric range
+    prob = max(min(prob, 1.0), epsilon)
+    return prob
 
  
 def LL(x):
@@ -120,8 +161,8 @@ def LL(x):
 		for x1 in xrange(total_snps-1): # v1 scaff
 			dist=abs(Position[plantID][v1s][x1+1]-Position[plantID][v1s][x1])
 			r = rbp*float(dist)
-			transition_probability[x1] ={'AA' : {'AA':(1-r)**2.0,'AB':2*r*(1-r),'BB':r**2.0}, 'AB' : {'AA':r*(1-r),'AB':(1-r)**2.0 + r**2.0,'BB':r*(1-r)}, 'BB' : {'AA':r**2.0,'AB':2*r*(1-r),'BB':(1-r)**2.0} }
-
+			transition_probability[x1] ={'BB': {'BB': (1 - r), 'AB': r, 'AA': 0.0}, 'AB': {'BB': r, 'AB': (1 - r), 'AA': r}, 'AA': {'BB': 0.0, 'AB': r, 'AA': (1 - r)} }
+	
 		if Gcalls[v1s]>0:
 			fprbs,rprbs,llx=foward_backward(obsA[plantID][v1s],states,start_probability,transition_probability,x)
 			#print v1s,Gcalls[v1s],"LL= ",llx
@@ -149,7 +190,7 @@ def LL(x):
 ### Main Program
 
 states = ('AA','AB','BB')
-start_probability = {'AA':0.25,'AB':0.5,'BB':0.25}
+start_probability = {'AA':0.1,'AB':0.4,'BB':0.5}
 
 
 inZ = open("bad.marks.txt","rU")
@@ -161,40 +202,43 @@ for line_idx, line in enumerate(inZ):
 	key=cols[0]+"_"+cols[1]
 	badmark[key]=1
 
-Position = {}
-obsA = {}
-v1scaffs = {}
-Gcalls = {}
-cscaff = ''
-calls_total = 0
 
-src = open("g.Genotypes."+plantID+".bam.txt", "rU")
+Position={}
+obsA={}
+v1scaffs={}
+Gcalls={}
+cscaff=''
+calls_total=0
+src  =open("g.Genotypes."+plantID+".bam.txt", "rU")
 for line_idx, line in enumerate(src):
-    cols = line.strip().split('\t')
-    if len(cols) < 4:
-        continue
+	cols = line.replace('\n', '').split('\t') 
+# isg480	1	400000	AB
+	key=cols[1]+"_"+cols[2]
+	try:
+		uck=badmark[key]
+		#print "suppressing ", key
+	except KeyError:
 
-    key = cols[1] + "_" + cols[2]
-    if key in badmark:
-        continue
+		if plantID!=cols[0].replace('.bam', ''):
+			print "Whoa",plantID,cols[0]
+		if line_idx==0:
+			Position[plantID]={}
+			obsA[plantID]={}
 
-    if line_idx == 0:
-        Position[plantID] = {}
-        obsA[plantID] = {}
 
-    if cols[1] != cscaff:
-        Position[plantID][cols[1]] = []
-        obsA[plantID][cols[1]] = []
-        cscaff = cols[1]
-        v1scaffs[cols[1]] = 0
-        Gcalls[cols[1]] = 0
+		if cols[1] !=cscaff: # new scaff
+			Position[plantID][cols[1]]=[]
+			obsA[plantID][cols[1]]=[]
+			cscaff=cols[1]
+			v1scaffs[cols[1]]=0
+			Gcalls[cols[1]]=0
 
-    Position[plantID][cols[1]].append(int(cols[2]))
-    obsA[plantID][cols[1]].append(cols[3])
-    v1scaffs[cols[1]] += 1
-    if cols[3] != 'NN':
-        Gcalls[cols[1]] += 1
-        calls_total += 1
+		Position[plantID][cols[1]].append(int(cols[2]))
+		obsA[plantID][cols[1]].append(cols[3])
+		v1scaffs[cols[1]]+=1 # will need to be updated if you do more than one plant in a run
+		if cols[3] != 'NN':
+			Gcalls[cols[1]]+=1
+			calls_total+=1
 
 #initial values for e1,e2,beta
 e_rates=[0.01, 0.01,0.01]
