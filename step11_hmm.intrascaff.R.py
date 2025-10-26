@@ -1,5 +1,5 @@
 #HS has edited this script to reflect the BC probabilities and also edited the transition probabilities. I did not change much as I did in the step10 script (which could be a bad idea we will see)
-
+#modified for BC population where AA is the recurrent parent
 # likelihoods based on window calls as input
 # all plants for a scaff together in all*txt
 # reports likelihood of observed states in forward_backward
@@ -94,7 +94,7 @@ def LL(x):
 	for x1 in xrange(len(x)): # recom rates
 		#dist=abs(Position[plantID][v1s][x1+1]-Position[plantID][v1s][x1])
 		r = x[x1] #rbp*float(dist)
-		transition_probability[x1] ={'BB': {'BB': (1 - r), 'AB': r, 'AA': 0.0}, 'AB': {'BB': r, 'AB': (1 - r), 'AA': r}, 'AA': {'BB': 0.0, 'AB': r, 'AA': (1 - r)} }
+		transition_probability[x1] ={'AA': {'AA': (1 - r), 'AB': r, 'BB': 0.0}, 'AB': {'AA': r, 'AB': (1 - r), 'BB': r}, 'BB': {'AA': 0.0, 'AB': r, 'BB': (1 - r)} }
 
 	Total_LL=0.0
 	for j in range(len(f2plants)):
@@ -125,7 +125,7 @@ def LL(x):
 ### Main Program
 
 states = ('AA','AB','BB')
-start_probability = {'AA':0.1,'AB':0.4,'BB':0.5}
+start_probability = {'AA':0.5,'AB':0.4,'BB':0.1}
 
 
 Error_Rates={}
