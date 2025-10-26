@@ -1,5 +1,5 @@
-#HS: this script was edited in 10/21/2025 for Map 3A and to try to solve the math domain error I keep getting (it worked)
-#IMPORTANT: MAKE SURE TO EDIT THE GENOTYPE RATIOS AND PROBABILITIES based on the map direction 
+#HS: This script was edited on 10/21/2025 for Map 1A2A and to solve the math domain error I keep getting.
+#Important: make sure to edit the genotype frequency and the transition probability based on which parent is in the recurrent one. In this script AA is the recurrent parent.
 
 # likelihoods based on window calls as input
 # all plants for a scaff together in all*txt
@@ -162,7 +162,7 @@ def LL(x):
 		for x1 in xrange(total_snps-1): # v1 scaff
 			dist=abs(Position[plantID][v1s][x1+1]-Position[plantID][v1s][x1])
 			r = rbp*float(dist)
-			transition_probability[x1] ={'BB': {'BB': (1 - r), 'AB': r, 'AA': 0.0}, 'AB': {'BB': r, 'AB': (1 - r), 'AA': r}, 'AA': {'BB': 0.0, 'AB': r, 'AA': (1 - r)} }
+			transition_probability[x1] ={'AA': {'AA': (1 - r), 'AB': r, 'BB': 0.0}, 'AB': {'AA': r, 'AB': (1 - r), 'BB': r}, 'BB': {'AA': 0.0, 'AB': r, 'BB': (1 - r)} }
 	
 		if Gcalls[v1s]>0:
 			fprbs,rprbs,llx=foward_backward(obsA[plantID][v1s],states,start_probability,transition_probability,x)
@@ -191,7 +191,7 @@ def LL(x):
 ### Main Program
 
 states = ('AA','AB','BB')
-start_probability = {'AA':0.1,'AB':0.4,'BB':0.5}
+start_probability = {'AA':0.5,'AB':0.4,'BB':0.1}
 
 
 inZ = open("bad.marks.txt","rU")
