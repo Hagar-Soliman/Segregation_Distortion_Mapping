@@ -312,7 +312,7 @@ Output: This script outputs 14 files for each chromosome with posterior probabil
 
 I then use the following code to concatenate all of them. Make sure that all chromosomes are present after concatenating, because the length of this file (i.e. the number of rows) should equal the number of markers in `1A_intrascaff_v3.txt`
 ```bash
-cat Chr_{01..14}.pp.txt > 1A_allmarker.txt
+cat Chr_{01..14}.pp.txt > 1A_allmarkers.txt
 ```
 
 Then we move to R to make our genotype matrix and use rQTL to plot our data!!!!
