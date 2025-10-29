@@ -273,9 +273,7 @@ Note: this Python script cannot run with barebone Python 2, this is why I am loa
 
 This Python script will generate a file for each .g file, and each file will contain one line. I used a loop called `combine_genotype_err_loop.sh` to combine them in a txt file called `1A_combined_genotypes_err.txt`. In this step, you will notice that there are errors in calculating the genotype error rate for some individuals. This happens, I believe, due to big gaps in some of the chromosomes that give that error. I have modified that Python script to prevent this error. But I still had some problematic individuals (just one or two) I exlcuded them and made a new list named `1A_filtered_genotypes_err_rates.txt`.
 
-In Excel, filter individuals based on their genotype errors. John's criteria is less than 20% (.2) error for each of the different error rates. The columns should be: Sample ID, Marker number, e1, e2, beta, and liklhood. In excel, make a new columns called drop? nad se the AND() for e1, e2, and beta `=AND(C2<0.2,D2<0.2,E2<0.2)` tell you which samples are high quality - i.e. any individuals that have <.2 for all error rates.
-
-Save as tab delimted file
+In Excel, filter individuals based on their genotype errors. John's criteria is less than 20% (.2) error for each of the different error rates. The columns should be: Sample ID, Marker number, e1, e2, beta, and liklhood. In excel, make a new columns called drop? nad se the AND() for e1, e2, and beta `=AND(C2<0.2,D2<0.2,E2<0.2)` tell you which samples are high quality - i.e. any individuals that have <.2 for all error rates. Save as tab-delimited file
 
 ## Step 11 GOOGA: Calculate intra-scaffold recombinational fractions
 Run: `step11_hmm.intrascaff.R.py` using `step11_intrascaff_rec_rates.sh`. This will take a few hours.
