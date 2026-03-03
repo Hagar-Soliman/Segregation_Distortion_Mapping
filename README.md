@@ -280,7 +280,7 @@ Run: `step11_hmm.intrascaff.R.py` using `step11_intrascaff_rec_rates.sh`. This w
 
 Input: `1A_filtered_genotypes_err_rates.txt`, a random `g.Genotypes.PlantID.bam.txt` to get the markers names, `1A_low_genotype_err_list.txt`, which is just a list of the individuals in the genotype error rates file (make sure it's the naked name with no `.bam.txt`. Finally, an empty `bad.marks.txt` 
 
- **⚠️Important Note:** in `1A_filtered_genotypes_err_rates.txt`, the columns must be tab-delimited or else the script won't run. I used this code to convert it `cat yourfile.txt | tr -s ' ' '\t' > yourfile.tab.txt`
+ **⚠️Important Note:** in `1A_filtered_genotypes_err_rates.txt`, the columns must be tab-delimited or else the script won't run. I used this code to convert it `awk '{$1=$1}1' OFS='\t' input.txt > output.tab.txt`. Note that the output must be a different file
  
 The output file (1A_intrascaff_v1.txt) has your first linkage map! Column 1 is the chromosome, column 2 is the marker. In column 3, each value is the intrascaffold recombination rate between the marker for that row and the
 marker below. The units on this are in probability of recombination (or cM/100). The maximum value here is 0.25 (this should not be a surprise because the max recombination rate is .5 (ie. unlinked) and there is a 50% chance that recombination occurs before the marker and a 50% chance it occurs after the marker (thus .25 each way). This may mean that a marker is either in the wrong location(in need of GOOGA!) or just poorly fits the genotype error algorithm and should have been discarded.
