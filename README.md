@@ -278,7 +278,30 @@ In Excel, filter individuals based on their genotype errors. John's criteria is 
 ## Step 11 GOOGA: Calculate intra-scaffold recombinational fractions
 Run: `step11_hmm.intrascaff.R.py` using `step11_intrascaff_rec_rates.sh`. This will take a few hours.
 
-Input: `1A_filtered_genotypes_err_rates.txt`, a random `g.Genotypes.PlantID.bam.txt` to get the markers names, `1A_low_genotype_err_list.txt`, which is just a list of the individuals in the genotype error rates file (make sure it's the naked name with no `.bam.txt`. Finally, an empty `bad.marks.txt` 
+Input: `1A_filtered_genotypes_err_rates.txt`(has to be tab-delimited), a random `g.Genotypes.PlantID.bam.txt` to get the markers names, `1A_low_genotype_err_list.txt`, which is just a list of the individuals in the genotype error rates file (make sure it's the naked name with no `.bam.txt`. Finally, an empty `bad.marks.txt` 
+
+```bash
+#loop to combine the genotype error rates
+
+#!/bin/bash
+
+# Define output file
+output="5C_combined_genotypes_err.txt"
+
+# Clear or create the output file
+> "$output"
+
+# Loop through all matching files
+for file in dsq*.out; do
+    if [[ -f "$file" && -s "$file" ]]; then
+        awk '{$1=$1}1' OFS='\t' "$file" >> "$output"
+    fi
+done
+
+
+#Then use it to make the individuals list
+awk '{print $1}' 5C_combined_genotypes_err.txt > 5C_genotype_err_indivi_list.txt
+```
 
  **⚠️Important Note:** In `1A_filtered_genotypes_err_rates.txt`, the columns must be tab-delimited or else the script won't run. I used this code to convert it `awk '{$1=$1}1' OFS='\t' input.txt > output.tab.txt`. Note that the output must be a different file.
  You can then use this file to generate the individuals list `awk '{print $1}' 3C_combined_genotypes_err.txt > 3C_genotyope_err_indivi_list.txt`
