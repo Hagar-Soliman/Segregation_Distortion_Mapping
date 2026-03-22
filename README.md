@@ -328,9 +328,15 @@ Before running this Python script, we will need to calculate the cumulative reco
 - First marker, cM = 0
 - Second marker, cM = 100*D2
 - Third maker, cM= 100*SUM($D$2:D3), then drag till the end of the chromosome
-- Assuming your recombination fractions are in column D, with the first marker starting in cell D2. Start each chromosome over with this same code and then fill down to the end of the chromosome with the formula for the 3rd marker. Once done, copy and paste values only into a new sheet to avoid missing values. The final file should look like `1A_intrascaff_v3.txt`. The wrong format of this file can cause errors.
+- Assuming your recombination fractions are in column D, with the first marker starting in cell D2. Start each chromosome over with this same code and then fill down to the end of the chromosome with the formula for the 3rd marker. Once done, copy and paste values only into a new sheet to avoid missing values. The final file should look like `1A_intrascaff_v3.txt`, it must be tab-delimited. The wrong format of this file can cause errors.
 
 Run: `step13_run_genotype.pp.txt` that uses `step13_genotype.pp.py`. This should run as a parallel job on the cluster for each linkage group (i.e. Chr_01..14)
+
+```bash
+module load dSQ
+dsq --job-file step13_run_genotype.pp.txt --mem-per-cpu 4g -t 30:00 --mail-type ALL
+#then run the sbatch code it will generate
+```
 
 Output: This script outputs 14 files for each chromosome with posterior probabilities for each marker. `Chr_01..Chr_14.pp.txt`
 
