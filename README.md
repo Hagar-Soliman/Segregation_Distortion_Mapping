@@ -74,13 +74,48 @@ Software: `BCFtools` and `SAMtools`
 
 Input: a .txt list of full paths to all the bam files needed for this VCF. I have created a loop that can make this list for you. Also, make sure to add the parents and F1. Each VCF should be a linkage group (do not mix individuals from different cross directions unless there is a reason to do so, which I might do in the future)
 
-**⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). This is **important** as VCF filtering will take place downstream when calling ancestry. I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
+**⚠️Note:** This script DOES NOT filter the VCF and keeps multiallelic variants (i.e., does not filter to only keep biallelic sites). This is **important** as VCF filtering will take place downstream when calling ancestry is step 6. I also added two extra lines to create an index and a summary statistics file. The reason why this script does not do any filtering is that it can create a "raw" VCF that then can be filtered to different software depending on their requirements. 
 
 ## Step 6: VCF processing using 3 Python scripts
 Run: `step6_VCF_prog1.py`, `step6_VCF_prog2.py`, and `step6_VCF_prog3.py` back to back.
 - **step6_VCF_prog1.py:** This script processes a compressed VCF file containing SNP calls and filters variants based on quality and allele balance criteria. It reads a .vcf.gz file for a specified library (e.g., "1A"), extracts SNPs with a minimum mapping quality (MQ ≥ 20), and evaluates allele depth (AD) across samples. For each SNP, it calculates the number of samples with valid calls, average read depth, and average reference allele proportion. SNPs that pass thresholds for sample coverage (≥ 50 samples) and allele balance (between 0.2 and 0.8) are written to a slimmed-down VCF and two read depth summary files. It also tracks the number of SNPs per scaffold and the position of the last SNP, outputting this to a scaffold summary file. You can change the: Min_MQ_score, Min_lines_called, minQ (allele freq),maxQ(allele freq).
--  **step6_VCF_prog2.py:** This script processes SNPs scaffold-by-scaffold, evaluates read depth and allele balance (excluding two parental lines), and selects high-quality, well-distributed SNPs for further analysis—likely for RAD-tag based genotyping or linkage mapping. **⚠️Important Note:** Make sure to look at the .out file from the first Python program run and see which line contains the two parents and use this info to edit the second Python script (ln 62). Also, don't forget to change the number of individuals.
--  **step6_VCF_prog3.py:** This script processes a list of selected SNPs (SNPs.limited.txt) and extracts reference and alternate allele depths for each individual across those SNPs, organizing the output into scaffold-specific and sample-specific files. It will output a .txt file for all .bam files in their own directories, along with a .txt file for each chromosome (this will be output in the same directory where this script was ran from). Also, it should output an `all.samples.txt` file.
+
+**⚠️Note:** for my own crossing design (BC and not F2s), I have changed the filtering ratios since they will change from one direction to another based on who is the recurrent parent in a given backcrossing population. See the example below:
+
+```python
+
+#-------------------------------------------------------------------------------
+# Step6 Prog1 — VCF filtering for map 7C and 8C
+# BC to CCC9 = BB parent
+# qR near 0.0 = strong BB excess (distortion); qR near 0.5 = all heterozygotes
+# upper bound 0.70 excludes AA-biased sites impossible in a BC to BB
+#   minQ = 0.05
+#   maxQ = 0.70
+# Change the script to the values below when the recurrent parent is not IM62 or what the genome is aligned too
+
+  Min_MQ_score = 20
+    Min_lines_called = 50
+    minQ = 0.05
+    maxQ = 0.70
+
+#-------------------------------------------------------------------------------
+# Step6 Prog1 — VCF filtering for map 5C and 6C
+# BC to IM62 = AA parent
+# qR near 0.5 = all heterozygotes; qR near 1.0 = strong AA excess (distortion)
+# lower bound 0.30 excludes BB-biased sites impossible in a BC to AA
+#   minQ = 0.30
+#   maxQ = 0.95
+#-------------------------------------------------------------------------------
+    Min_MQ_score = 20
+    Min_lines_called = 50
+    minQ = 0.30
+    maxQ = 0.95
+```
+
+-  **step6_VCF_prog2.py:** This is a diagnostic script. Run this script two times. First run produced info about the depth to decide on the cut-offs. Reads with more than 15 are usually at repetitive genomic regions. Lower the cut-off to produce the final SNP.limited.txt file when you run the script again. It is okay not to be super strict here since we will do depth filtering in step9B at a window level. I did the first run at 50, then decided that 15 was a good number to remove most outliers.
+**⚠️Important Note:** Make sure to look at the .out file from the first Python program and see which line contains the two parents and use this info to edit the second Python script (ln 62). Also, don't forget to change the number of individuals.
+
+-  **step6_VCF_prog3.py:** This script processes a list of selected SNPs (SNPs.limited.txt) and extracts reference and alternate allele depths for each individual across those SNPs, organizing the output into scaffold-specific and sample-specific files. It will output a .txt file for all .bam files in their own directories, along with a .txt file for each chromosome. Also, it should output an `all.samples.txt` file. I have changed this script to output the files to a new directory called "refAlt". 
 
 **⚠️Important Note:** that the third Python script outputs lots of data (.bam.txt file for each bam file in the original aligned directory) AND does not overwrite the generated files if it fails and is re-run. Instead, it will just keep adding lines to the pre-existing files. Thus, always make sure to remove any generated files if your script failed to run before re-running again.
 
