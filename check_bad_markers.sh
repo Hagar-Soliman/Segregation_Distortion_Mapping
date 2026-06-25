@@ -53,6 +53,8 @@
 #                              ceiling, a hard sign of a bad marker
 #   Round 2 (v2 file): 0.1  — catches sub-ceiling bad markers that survived
 #                              round 1 after the obvious bad markers are masked
+
+
 RR_THRESHOLD_ROUND1=0.2
 RR_THRESHOLD_ROUND2=0.1
 
