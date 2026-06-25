@@ -122,19 +122,19 @@ Run: `step6_VCF_prog1.py`, `step6_VCF_prog2.py`, and `step6_VCF_prog3.py` back t
 ## Step 7: Assign parental ancestry (R)
 Run: `step7_assign_parental_ancestry.R` as a cluster job, as it will take a few hours to run. Use `step7_run_R_parental_ancestry.sh` to run. 
 
-Before I start this step, I like to copy or move all the .bam.txt (including the parents and F1) files to a directory called, for example, 1A_refAlt and have the script and it's running bash file in the same directory. There is a loop to do so in the Loops file. Pia Schward edited this file so it can run parallel jobs to run faster.
+This R script compares allele depths from two parental lines (e.g. IM62 and IMPO) to classify each SNP site as REF (IMPO), ALT(IM62), HET, or missing (NN), then uses this classification to polarize genotypes in a set of recombinant individuals, flipping allele counts where necessary to align with parental ancestry. For the polarization step, if parents are opposite (e.g., IMPO = REF, IM62 = ALT), it retains allele counts. - If parents are flipped (IMPO = ALT, IM62 = REF), swaps ref and alt counts to align with ancestry.
 
-This R script compares allele depths from two parental lines (IM62 and IMPO) to classify each SNP site as REF (IMPO), ALT(IM62), HET, or missing (NN), then uses this classification to polarize genotypes in a set of recombinant individuals, flipping allele counts where necessary to align with parental ancestry. For the polarization step, if parents are opposite (e.g., IMPO = REF, IM62 = ALT), it retains allele counts. - If parents are flipped (IMPO = ALT, IM62 = REF), swaps ref and alt counts to align with ancestry.
+I have modified the R script to exclude the two parental files so I don't corrupt them in case this step fails. Second, after this script and onward, AA = CCC9 or IMPO and BB = IM62
 
 Output: `parental_ancestry.tt`, update the `.nam.txt' file to make sure they are poralized. and `all.scaffold_*txt.`
 
 ## step 8: Windows
 Run: `step8_window.py`. Use `step8_window_run.sh`
 
-This step averages across a window based on the number of SNPs/ number of reads/ some range. You can define heterozygote calls as het deviation (I changed it to 0.2 to make it stricter when calling heterozygous windows). This will output 3 files for each individual. 1) a Genotypes file, 2) a genostats file (total number of windows with AA, AB, NN genotypes), and 3) a windows file (which I think is a count for each site that was used to build the genotypes file).
+This step averages across a window based on the number of SNPs/ number of reads/ some range. You can define heterozygote calls as het deviation (I changed it to 0.2 to make it stricter when calling heterozygous windows) and the minimum numebr of SNPs per window. I choose to relax the SNPs/window filter here as I will filter in step 9 for that. This will output 3 files for each individual. 1) a Genotypes file, 2) a genostats file (total number of windows with AA, AB, NN genotypes), and 3) a windows file (which I think is a count for each site that was used to build the genotypes file).
 **⚠️Important Note:** I hated how this script outputs files with no headers, so I added a few Python lines to add headers to the output files. However, downstream, these headers can cause an issue, which I tried to fix in the downstream script. For now, I added a # in front of those lines to just avoid the headache altogether. 
 
-**⚠️Important Note:** Future Hagar noticed that when there are markers with high perecentage of NN, this inflates the peak and cause an artifcat downstream. one way to delet these windows is to make sure to add them possibly (site_list) to be exlcuded or include them into the bad.marks.txt file? 
+**⚠️Important Note:** Future Hagar noticed that when there are markers with high percentage of NN, this inflates the peak and cause an artifcat downstream. one way to delet these windows is to make sure to add them possibly (site_list) to be exlcuded or include them into the bad.marks.txt file? 
 
 The goal: identify genomic windows where more than 10% of individuals have genotype = NN (missing).
 
@@ -156,170 +156,38 @@ There is a filtering step at step 9B, but I will investigate further.
 
 
 ## Step 9: Second Ancestry loop to filter and output .g files (R)
-This step will process the genotypes, genostats, and windows outputted from step 8. It will filter the genotypes files and also filter out windows with low depth. I manually filtered out bad individuals by concatenating all the genostats in one table (loop can be found in the Loops file) and excluded any individuals that:
+This step will process the genotypes, genostats, and windows output from step 8. It will filter the genotype files and also filter out windows with low depth.
+
+💡 I split this step into 9A and 9B. 9A takes a little bit of time to generate the site counts, it also detect the window number automatically for each map. 9B filters bad individuals and windows-based and generates the g. files. Check and change the parameters at the top of the script. 
+
+
+Excluded any individuals that:
 
 **(1)** have 80% or of their windows missing or (NN)
 
 **(2)** are 70% homozygous for the backcrossed parent or 70% heterozygous.
 
-**(3)** are 70% homozygous for the other parent. Although BB windows are usually an AB window that was miscalled, but if it is at such high percentage, The indivdual is probably bad.  
+**(3)** are 10% homozygous for the non-recurrent parent (this can be tighter).
 
-I then made a new directory, copied all the files, and deleted all the individuals I excluded from the above criteria. I name this directory "1A_refAlt_filtered. After that, I ran the R script using this filtered directory. This is why the script did not pick up any bad individuals, just bad windows. 
 
-Also, I ran this R script in the cluster's R line by line rather than a job like step 8. Update: When I made the window smaller (50kb) and had 963 indivduals, extracting the sites loops took almost 6 hrs. So, from now onward, I will submit the R script as a cluster job.
+Exclude any windows that:
+
+**(1)** have less than 3 SNPs to avoid allele dropout.
+
+**(2)** absent in more than 90% of the population (i.e. very few individuals carry that marker).
+
+Step 9B will output the list of bad individuals and sites then only generate g. files for the passes individuals with passed windows. 
+
 
 **⚠️Note:**  The Python script from step 8 will output files with a header if you decided to use the header line in the script, so make sure that header = TRUE if that was the case.
-
-```r
-#making sense of windows data:
-#when het dev = 0.4 and windows= 100KB--> THIS IS WHAT I ENDED UP USING, BUT YOU MIGHT WANT TO PLAY WITH WINDOW SIZES
-
-setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered")
-path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/"
-
-files<-dir(path, pattern="Genostats.")
-data<-data.frame(matrix(ncol=5,nrow=length(files)))
-for(k in 1:length(files)){
-  data[k,1:5]<-read.delim(files[k],header=TRUE)
-}
-names(data)<-c("indiv","AA","AB","BB","NN")
-#check the data looks OK and they are the correct type
-str(data)
-
-#checking sites that suck:
-
-genotype.files<-dir(path, pattern="Genotypes.")
-countAA<-0
-countAB<-0
-countBB<-0
-countNN<-0
-test<-read.delim("Genotypes.1A_1A_A1.bam.txt", header=TRUE) #reads in random Genotypes file to get the site names
-site.counts<-data.frame(matrix(nrow=2472,ncol=6)) #nrow=number of windows in your files aka the number of sites (get from the file in the line above)
-window.names<-test[,2:3]
-#This is the loop to start populating the site.counts table. The loops takes along time to run (~ 1hr for 416 indivduals)
-View(site.counts) 
-for(d in 1:2472){
-  countAA<-0
-  countAB<-0
-  countBB<-0
-  countNN<-0
-  for(m in genotype.files){
-    temp<-read.delim(m,header=TRUE)
-    if(temp[d,4]=="AA"){
-      countAA=countAA+1
-    } else if(temp[d,4]=="AB"){
-      countAB=countAB+1
-    } else if(temp[d,4]=="BB"){
-      countBB=countBB+1
-    } else if(temp[d,4]=="NN"){
-     countNN=countNN+1
-    }
-  }
-  site.counts[d,3]<-countAA
-  site.counts[d,4]<-countAB
-  site.counts[d,5]<-countBB
-  site.counts[d,6]<-countNN
-}
-site.counts[,1:2]<-window.names
-names(site.counts)<-c("scaffold","pos","AA","AB","BB","NN")
-
-#Write and save the table
-write.table(site.counts, file="site.counts_hetdev=0.2+WS100K.txt",sep="\t",quote=FALSE,row.names=FALSE)
-site.counts <- read.delim("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/site.counts_hetdev=0.2+WS100K.txt", header = TRUE)
-
-#checking the number of sites with no coverage
-count=0
-for(i in 1:length(site.counts[,1])){
-  if(site.counts[i,6]==540){ 
-    count=count+1
-  }
-}
-
-#found 363 windows/sites with no coverage in the all samples dataset
-
-#number of individuals with no coverage
-count=0
-for(i in 1:length(data[,1])){
-  if(data[i,5]==nrow(test)){
-    count=count+1
-  }
-}
-
-#there are 2 individuals with no coverage in the all samples dataset
-
-#make some filtering decisions. Here, I've decided to keep any individual with <50 markers are removed (91 individuals) + cut sites if there's at least 345 individuals with missing data (~90%). These are probably too lax, but it's worth playing around with.
-
-#For some reason, JKK's windows program duplicated a bunch of sites (aka certain scaffolds were repeated twice in the genotypes/windows file for each individual. Double check your output + remove the duplicate rows). In this set of files, duplicates for 100kb windows begin on 2170
-
-#makes a list of sites to remove
-site.list <- data.frame(matrix(nrow=0, ncol=2))
-names(site.list) <- c("scaffold", "pos")
-
-#Puprose:this code does is that it removes windows that are missing in 90% of the indivduals.
-#Make sure to change count to 90% of total individuals, in this case, I have 416 invidiauls, thus, 0.9 X 416 = 375.
-#change i to number of windows: here 2472, and change the threshold after if depedning on the sample size
-for(i in 1:2472){
-  if(site.counts[i, 6] > 375){
-    site.list <- rbind(site.list, site.counts[i, 1:2])
-  }
-}
-#note: HS found 543 windows in the list.
-#write an output table of the sites list
-write.table(site.list, file="1A_site_list0.2+WS100K_presentunder0.9.txt", sep="\t", quote=FALSE, row.names=FALSE)
-
-#Purpose: Create a list indiv.list of individuals with low coverage to exclude from the analysis. Note: I have already done this (more or less) manually in excell by removing any inviduals if their NN windows is 80% of the total number of widnows.
-#Condition: If the sum of AA, AB, and BB counts for an individual is less than 100, add that individual to indiv.list.
-
-indiv.list <- c()
-for(i in 1:length(data[, 1])){
-  if((data[i, 2] + data[i, 3] + data[i, 4]) < 100){
-    indiv.list <- append(indiv.list, data[i, 1])
-  }
-}
-
-setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/")
-write.table(indiv.list, file="1A_indiv_list0.2+WS100K_presentunder100.txt", sep="\t", quote=FALSE, row.names=FALSE)
-write.table(indiv.list, file="1A_indiv_list.txt", sep="\t", quote=FALSE, row.names=FALSE)
-
-## filter the Genotype.* files generated by JKK's windowing script:
-
-#I'm resetting this from above because now I'm including the parents, but I'm calling the filelist something different just in case I need to go back.
-
-setwd("/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/")
-path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/"
-output.path="/home/hks25/palmer_scratch/VCF/1A_VCF/1A_refAlt_filtered/1A_g_files/"
-#made the indiv list based on the Genostats* files, so need to change those to read in the Genotypes* files. #
-
-# Modify the filenames in indiv.list to include the prefix "Genotypes."
-indiv.list <- paste0("Genotypes.", indiv.list, ".txt")
-
-# Ensure that the filenames in indiv.list do not include paths, so they can match with geno.files
-indiv.list <- basename(indiv.list)
-
-#loops through Genotypes* files, only reads in individuals to keep (aka not on the list above), only records markers to keep (again, markers not on the list):
-
-for(i in 1:length(genotype.files)){
-  genotypes<-data.frame(matrix(nrow=0,ncol=4))
-  if(!(genotype.files[i]%in%indiv.list)){
-    temp<-read.delim(genotype.files[i],header=TRUE)
-    for(j in 1:length(temp[1:2472,1])){
-      f<-row.names(temp)
-      if(!(f[j]%in%row.names(site.list))){
-        genotypes<-rbind(genotypes,temp[j,])
-      }
-    }
-    write.table(genotypes, file=paste(output.path,"g.",genotype.files[i],sep = ''), row.names=FALSE, col.names=FALSE, quote=FALSE, sep= "\t" )
-  }
-}
-```
-The above loop will produce the g. files needed for the next step. Notice that these files do not have a header. 
+ 
 
 ## Step 10 GOOGA: Galculate Genotype Error Rate
-First, I moved all the .g files into a new directory called 1A_g_files. In this directory, have those scripts so they can run with no problems
 
 Run: `step10_calc_genotype_err_rate.py` as a parallel job using this job list `step10_genotypes_list.txt`. This runs for each sample; use `step10_sample_list_loop.sh` to make the list.
 
 **⚠️Important Note:** make sure to make an empty file called `bad.marks.txt` or the script won't run
+**⚠️Important Note:** Make sure the genotype ratios are correct based on the cross direction (e.g. start_probability = {'AA':0.1,'AB':0.4,'BB':0.5}). Notice that I allowed for a little bit of AA windows just so I don't get errors. No need to change the transition probabilities for each cross direction; I have changed this to work with a BC design, and it's symmetrical, so no need to change further. 
 ```bash
 module load dSQ
 dsq --job-file step10_genotypes_list.txt --mem-per-cpu 4g -t 20:00 --mail-type ALL
@@ -329,38 +197,17 @@ Note: this Python script cannot run with barebone Python 2, this is why I am loa
 
 This Python script will generate a file for each .g file, and each file will contain one line. I used a loop called `combine_genotype_err_loop.sh` to combine them in a txt file called `1A_combined_genotypes_err.txt`. In this step, you will notice that there are errors in calculating the genotype error rate for some individuals. This happens, I believe, due to big gaps in some of the chromosomes that give that error. I have modified that Python script to prevent this error. But I still had some problematic individuals (just one or two) I exlcuded them and made a new list named `1A_filtered_genotypes_err_rates.txt`.
 
-In Excel, filter individuals based on their genotype errors. John's criteria is less than 20% (.2) error for each of the different error rates. The columns should be: Sample ID, Marker number, e1, e2, beta, and liklhood. In excel, make a new columns called drop? nad se the AND() for e1, e2, and beta `=AND(C2<0.2,D2<0.2,E2<0.2)` tell you which samples are high quality - i.e. any individuals that have <.2 for all error rates. Save as tab-delimited file
+In Excel, filter individuals based on their genotype errors. John's criteria is less than 20% (.2) error for each of the different error rates. The columns should be: Sample ID, Marker number, e1, e2, beta, and likelihood. In Excel, make a new columns called drop? nad se the AND() for e1, e2, and beta `=AND(C2<0.2,D2<0.2,E2<0.2)` tell you which samples are high quality - i.e. any individuals that have <.2 for all error rates. Save as tab-delimited file,
+
+💡 To automate doing this with a script, run `combine_and_filter_genotype_err.sh` and it will generate a filtered list of genotype error and a list containing the names of these individuals used in step 11.
+
 
 ## Step 11 GOOGA: Calculate intra-scaffold recombinational fractions
 Run: `step11_hmm.intrascaff.R.py` using `step11_intrascaff_rec_rates.sh`. This will take a few hours.
 
 Input: `1A_filtered_genotypes_err_rates.txt`(has to be tab-delimited), a random `g.Genotypes.PlantID.bam.txt` to get the markers names, `1A_low_genotype_err_list.txt`, which is just a list of the individuals in the genotype error rates file (make sure it's the naked name with no `.bam.txt`. Finally, an empty `bad.marks.txt` 
 
-```bash
-#loop to combine the genotype error rates
-
-#!/bin/bash
-
-# Define output file
-output="5C_combined_genotypes_err.txt"
-
-# Clear or create the output file
-> "$output"
-
-# Loop through all matching files
-for file in dsq*.out; do
-    if [[ -f "$file" && -s "$file" ]]; then
-        awk '{$1=$1}1' OFS='\t' "$file" >> "$output"
-    fi
-done
-
-
-#Then use it to make the individuals list
-awk '{print $1}' 5C_combined_genotypes_err.txt > 5C_genotype_err_indivi_list.txt
-```
-
- **⚠️Important Note:** In `1A_filtered_genotypes_err_rates.txt`, the columns must be tab-delimited or else the script won't run. I used this code to convert it `awk '{$1=$1}1' OFS='\t' input.txt > output.tab.txt`. Note that the output must be a different file.
- You can then use this file to generate the individuals list `awk '{print $1}' 3C_combined_genotypes_err.txt > 3C_genotyope_err_indivi_list.txt`
+ **⚠️Important Note:** In `1A_filtered_genotypes_err_rates.txt`, the columns must be tab-delimited or else the script won't run.
 
  **⚠️Important Note:** Make sure that in the Python script `step11_hmm.intrascaff.R.py` the AA, AB, and BB ratios and transition probabilities are reflecting the correct ratios depending on the parent F1s that were backcrossed to. This will also depend on your definetion on which parent is AA and which is BB in step 7
  
@@ -371,6 +218,9 @@ How do you determine which of these possibilities is correct? Well, we can disca
 chromosome needs reordering in Googa. If this fixes the problem, then the marker was simply bad.
 
 Ok, let's get rid of the bad markers. So, highlight each of the crappy markers in yellow in Excel. There is likely either one maker with .25 or two makers. Remember, the recombination rate is calculated with the marker below it. So get rid of the marker below the .25 in case of a single marker with a .25. If there are two markers back to back with .25, then get rid of the second one. Compile the list of bad markers into your previously created tab-delimited text file named `bad.marks.txt`. You only need two columns, Chromosome and Marker, but do not put in a header line. Now we can rerun the program calculating intrascaffold error rates with the `bad.marks` version of the last program and see if we get rid of the 0.25 errors. It is normal for the last marker in the chromosome to have a large negative value, so don't delete that. 
+
+
+💡 I created a script that automatically checks bad markers and outputs them in the `bad.marks.txt`. run `check_bad_marks.sh` script. This script can be run twice; the first run auto-detects `intrascaff_v1.txt`. Discover the bad markers, then when step 12 is complete, re-run `check_bad_marks.txt` and it will auto detect `intrascaff_v2.txt` and apply a stricter threshold (i.e. going from 0.25 to 0.1). This script is also better than doing the bad marker removal manually, as it traces back each window and calculates a score based on which it chooses which window to exclude and which to ket (i.e. not always the second window)
 
 ## Step 12: GOOGA: Calculate Rntra-scaffold Recombinational Fractions After Removing Bad Markers
 Run: `step12_hmm.intrascaff.R.badmarks.py` using `step12_intrascaff_rec_badmarks.sh`. This will take a few hours.
@@ -385,6 +235,8 @@ Before running this Python script, we will need to calculate the cumulative reco
 - Second marker, cM = 100*D2
 - Third maker, cM= 100*SUM($D$2:D3), then drag till the end of the chromosome
 - Assuming your recombination fractions are in column D, with the first marker starting in cell D2. Start each chromosome over with this same code and then fill down to the end of the chromosome with the formula for the 3rd marker. Once done, copy and paste values only into a new sheet to avoid missing values. The final file should look like `1A_intrascaff_v3.txt`, it must be tab-delimited. The wrong format of this file can cause errors.
+
+💡 I have automated this step; run `make_intrascaff_v3.sh`
 
 Run: `step13_run_genotype.pp.txt` that uses `step13_genotype.pp.py`. This should run as a parallel job on the cluster for each linkage group (i.e. Chr_01..14)
 
